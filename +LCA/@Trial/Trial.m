@@ -1,0 +1,259 @@
+classdef Trial < handle
+    %
+    %
+    % Class to bind together behavior, electrophysiology, and videography
+    % data.
+    %
+    % 
+    %
+    %
+    % DHO, 5/08.
+    %
+    properties
+        trialNum = [];
+        behavTrial = []; % If initialized to empty Solo.BehavTrial, then save/load don't work properly. Same for spikesTrial, whiskerTrial.
+        spikesTrial = []; % LCA.SpikesTrial;
+        whiskerTrial = [];% Whisker.WhiskerSignalTrial or Whisker.WhiskerTrialLite;
+    end
+
+    properties (Dependent = true)
+        cellNum
+        cellCode
+        mouseName
+        sessionName
+        trialType % 1 for go trial, 0 for no-go trial.
+        trialCorrect % 1 for correct, 0 for incorrect.
+        trialOutcome
+
+        spikeRateInHz
+        answerLickTime
+        beamBreakTimes
+        pinDescentOnsetTime
+        pinAscentOnsetTime
+        useFlag % 1 if useFlags for component trial objects are all one, 0 otherwise.
+    end
+
+    methods (Access = public)
+        function obj = Trial(behav_trial, spikes_trial, varargin)
+            %
+            % function obj = Trial(behav_trial, spikes_trial, varargin)
+            %
+            % behav_trial: Solo.BehavTrial object.
+            % spikes_trial: LCA.SpikesTrial object.
+            % varargin: Optional Whisker.WhiskerSignalTrial, Whisker.WhiskerTrialLite, 
+            % or Whisker.WhiskerMeasurementsTrial object.
+            %
+            
+            if nargin > 0
+% 
+%                 if ~isa(behav_trial,'Solo.BehavTrial')
+%                     error('First argument must be a class of type Solo.BehavTrial')
+%                 end
+                if ~isa(spikes_trial,'LCA.SpikesTrial')
+                    error('Second argument must be a class of type LCA.SpikesTrial')
+                end
+                if nargin > 2
+                    if ~isa(varargin{1},'Whisker.WhiskerSignalTrial') && ...
+                            ~isa(varargin{1},'Whisker.WhiskerTrialLite') && ...
+                            ~isa(varargin{1},'Whisker.WhiskerMeasurementsTrial')
+                        error(['Third argument must be a class of type Whisker.WhiskerSignalTrial, '...
+                            'Whisker.WhiskerTrialLite, or Whisker.WhiskerMeasurementsTrial'])
+                    end
+                    obj.whiskerTrial = varargin{1};
+                end
+
+                obj.behavTrial = behav_trial;
+                obj.spikesTrial = spikes_trial;
+
+                if obj.behavTrial.trialNum ~= obj.spikesTrial.trialNum
+                    error('behav_trial and spikes_trial arguments have different trialNum properties.')
+                else
+                    obj.trialNum = obj.behavTrial.trialNum;
+                end
+                if nargin > 2
+                    if obj.whiskerTrial.trialNum ~= obj.behavTrial.trialNum
+                        error('whisker_trial trialNum has trialNum mismatch.')
+                    end
+                end
+
+            end
+        end
+
+        function r = spikeRateInHzTimeWindow(obj, startTimeInSec, endTimeInSec)
+            %
+            % r = spikeRateInHzTimeWindow(startTimeInSec, endTimeInSec)
+            %
+            % Start and stop times are inclusive.
+            %
+            %
+
+            if isempty(obj.spikesTrial)
+                r = NaN;
+                return
+            end
+
+            sampleRate = obj.spikesTrial.sampleRate;
+            sweepLengthInSamples = obj.spikesTrial.sweepLengthInSamples;
+            spikeTimesInSec = obj.spikesTrial.spikeTimes ./ sampleRate;
+
+            if startTimeInSec < 0 || startTimeInSec > sweepLengthInSamples / sampleRate
+                error('Invalid value of parameter startTimeInSec.')
+            end
+
+            if endTimeInSec < 0 || endTimeInSec > sweepLengthInSamples / sampleRate
+                error('Invalid value of parameter endTimeInSec.')
+            end
+
+            if startTimeInSec >= endTimeInSec
+                error('Start time is greater or equal to end time.')
+            end
+
+            if length(spikeTimesInSec)==1
+                if spikeTimesInSec==0
+                    r = 0;
+                    return
+                end
+            end
+
+            nspikes = length(find(spikeTimesInSec >= startTimeInSec & ...
+                spikeTimesInSec <= endTimeInSec));
+
+            r = nspikes / (endTimeInSec - startTimeInSec);
+
+        end
+
+
+        function r = spikeCountInTimeWindow(obj, startTimeInSec, endTimeInSec)
+            %
+            % r = spikeCountInTimeWindow(startTimeInSec, endTimeInSec)
+            %
+            % Start and stop times are inclusive.
+            %
+            %
+
+            if isempty(obj.spikesTrial)
+                r = NaN;
+                return
+            end
+
+            sampleRate = obj.spikesTrial.sampleRate;
+            sweepLengthInSamples = obj.spikesTrial.sweepLengthInSamples;
+            spikeTimesInSec = obj.spikesTrial.spikeTimes ./ sampleRate;
+
+            if startTimeInSec < 0 || startTimeInSec > sweepLengthInSamples / sampleRate
+                error('Invalid value of parameter startTimeInSec.')
+            end
+
+            if endTimeInSec < 0 || endTimeInSec > sweepLengthInSamples / sampleRate
+                error('Invalid value of parameter endTimeInSec.')
+            end
+
+            if startTimeInSec >= endTimeInSec
+                error('Start time is greater or equal to end time.')
+            end
+
+            if length(spikeTimesInSec)==1
+                if spikeTimesInSec==0
+                    r = 0;
+                    return
+                end
+            end
+
+            nspikes = length(find(spikeTimesInSec >= startTimeInSec & ...
+                spikeTimesInSec <= endTimeInSec));
+
+            r = nspikes;
+        end
+        
+        
+        function r = peakInstRate(obj)
+            if isempty(obj.spikesTrial)
+                r = [];
+            else
+                r = obj.spikesTrial.peakInstRate;
+            end
+        end
+
+    end
+
+
+
+
+    methods % Dependent property methods; cannot have attributes.
+
+        function value = get.cellNum(obj)
+            value = obj.spikesTrial.cellNum;
+        end
+
+        function value = get.cellCode(obj)
+            value = obj.spikesTrial.cellCode;
+        end
+
+        function value = get.mouseName(obj)
+            value = obj.behavTrial.mouseName;
+        end
+
+        function value = get.sessionName(obj)
+            value = obj.behavTrial.sessionName;
+        end
+
+        function value = get.trialType(obj)
+            value = obj.behavTrial.trialType;
+        end
+
+        function value = get.trialCorrect(obj)
+            value = obj.behavTrial.trialCorrect;
+        end
+        
+        function value = get.trialOutcome(obj)
+            trialType = obj.behavTrial.trialType;
+            trialCorrect = obj.behavTrial.trialCorrect;
+            if trialType==1 && trialCorrect==1
+                value='Hit';
+            elseif trialType==1 && trialCorrect==0
+                value='Miss';
+            elseif trialType==0 && trialCorrect==1
+                value='CorrectRejection';
+            elseif trialType==0 && trialCorrect==0
+                value='FalseAlarm';
+            end
+        end
+        
+        function value = get.answerLickTime(obj)
+            value = obj.behavTrial.answerLickTime;
+        end
+
+        function value = get.beamBreakTimes(obj)
+            value = obj.behavTrial.beamBreakTimes;
+        end
+        
+        function value = get.pinDescentOnsetTime(obj)
+            value = obj.behavTrial.pinDescentOnsetTime;
+        end
+        
+        function value = get.pinAscentOnsetTime(obj)
+            value = obj.behavTrial.pinAscentOnsetTime;
+        end        
+
+        function value = get.spikeRateInHz(obj)
+            if ~isempty(obj.spikesTrial)
+                value = obj.spikesTrial.spikeRateInHz;
+            else
+                value = [];
+            end
+        end
+
+        function value = get.useFlag(obj)
+            if obj.behavTrial.useFlag==1 && obj.spikesTrial.useFlag==1 % ADD: obj.WhiskerTrial.useFlag==1
+                value = 1;
+            else
+                value = 0;
+            end
+        end
+
+    end
+end
+
+% SHOULD IMPLEMENT PLOTTING METHODS TOO.  TRIALARRAY OBJECT VIEWER WILL
+% THEN JUST CALL THIS OBJECT'S PLOTTING METHOD AND WILL NOT HAVE TO ACCESS
+% THIS OBJECT'S PROPERTIES.

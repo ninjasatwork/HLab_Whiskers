@@ -1,0 +1,131 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svobodalab/packages/!svn/ver/108/branches/27jun10_speed/+Solo
+END
+solo_get_mouse_weight.m
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_mouse_weight.m
+END
+solo_get_trial_reaction_times.m
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_trial_reaction_times.m
+END
+solo_get_offset_steps.m
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_offset_steps.m
+END
+solo_get_session_pc.m
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_session_pc.m
+END
+solo_get_session_consumed_volume.m
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_session_consumed_volume.m
+END
+solo_normalized_time_normalized_percent_correct.m
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_normalized_time_normalized_percent_correct.m
+END
+plot_hit_history.m
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/plot_hit_history.m
+END
+solo_moving_pc_concat.m
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_moving_pc_concat.m
+END
+get_scored_discrim_trials.m
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/get_scored_discrim_trials.m
+END
+solo_get_session_far.m
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_session_far.m
+END
+solo_get_session_hr.m
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_session_hr.m
+END
+solo_set_trim_all.m
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_set_trim_all.m
+END
+load_solo.m
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/load_solo.m
+END
+load_solo_join_files.m
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/load_solo_join_files.m
+END
+solo_get_session_numtrials.m
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_session_numtrials.m
+END
+solo_moving_pc.m
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_moving_pc.m
+END
+load_data_nx.m
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svobodalab/packages/!svn/ver/104/branches/27jun10_speed/+Solo/load_data_nx.m
+END
+dprime.m
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/dprime.m
+END
+solo_set_trim.m
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_set_trim.m
+END
+solo_get_session_duration.m
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_session_duration.m
+END
+solo_get_notes.m
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svobodalab/packages/!svn/ver/94/branches/27jun10_speed/+Solo/solo_get_notes.m
+END
