@@ -835,6 +835,9 @@ text(0,-5,'No Contact','color','w')
 toAddSubIdx = unique(ceil(x(button == 1)/length(poleWindow)));
 toDelSubIdx = setdiff(unique(ceil(x(button == 3)/length(poleWindow))),toAddSubIdx);
 
+toAddSubIdx = toAddSubIdx(toAddSubIdx > 0 & toAddSubIdx <= length(toPlay));
+toDelSubIdx = toDelSubIdx(toDelSubIdx > 0 & toDelSubIdx <= length(toPlay));
+
 toAddTimes = toPlay(toAddSubIdx);
 toDelTimes = toPlay(toDelSubIdx);
 
