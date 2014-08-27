@@ -63,18 +63,18 @@ if nargin <4
         end
         
         params.meanAnswerTime=nanmean(tmp);
-        params.cellNum   = array.cellNum
-        params.trialNums = array.trialNums
+        params.cellNum   = array.cellNum;
+        params.trialNums = array.trialNums;
         params.arrayname = inputname(1);
         
         % Define the type of spike data present
         if sum(ismember(fieldnames(array.trials{params.sweepNum}),'shanksTrial'))
-            params.spikeDataType = 'silicon'
-            params.shankNum  = array.shankNum
+            params.spikeDataType = 'silicon';
+            params.shankNum  = array.shankNum;
         elseif sum(ismember(fieldnames(array.trials{params.sweepNum}),'spikesTrial'))
-            params.spikeDataType = 'singleUnit'
+            params.spikeDataType = 'singleUnit';
         else
-            params.spikeDataType = 'none'
+            params.spikeDataType = 'none';
         end
         
     end
@@ -118,9 +118,9 @@ if nargin <4
     
     sbutton = uipushtool(ht,'CData',icon_save,'TooltipString','Save Contacts and Parameters','Separator','on');
     
-    floatToggle = uitoggletool(ht,'CData',icon_floatOff, 'TooltipString', 'Toggle PreContact Baseline Correction')
-    zoomToggle  = uitoggletool(ht, 'CData',icon_zoomOut,   'TooltipString', 'Toggle Zoom Level')
-    vbutton = uipushtool(ht, 'CData',icon_video,   'TooltipString', 'Toggle Zoom Level')
+    floatToggle = uitoggletool(ht,'CData',icon_floatOff, 'TooltipString', 'Toggle PreContact Baseline Correction');
+    zoomToggle  = uitoggletool(ht, 'CData',icon_zoomOut,   'TooltipString', 'Toggle Zoom Level');
+    vbutton = uipushtool(ht, 'CData',icon_video,   'TooltipString', 'Toggle Zoom Level');
     
     
     
@@ -192,13 +192,13 @@ else
                 if params.sweepNum < length(array.trials)
                     params.sweepNum = params.sweepNum + 1;
                 end
-                reset_axes(params)
+                reset_axes(params);
                 
             case 'last'
                 if params.sweepNum > 1
                     params.sweepNum = params.sweepNum - 1;
                 end
-                reset_axes(params)
+                reset_axes(params);
                 
             case 'add'
                 
@@ -453,12 +453,12 @@ end
 if ~isfield(params,'spikeDataType')
     
     if sum(ismember(fieldnames(array.trials{params.sweepNum}),'shanksTrial'))
-        params.spikeDataType = 'silicon'
-        params.shankNum  = array.shankNum
+        params.spikeDataType = 'silicon';
+        params.shankNum  = array.shankNum;
     elseif sum(ismember(fieldnames(array.trials{params.sweepNum}),'spikesTrial'))
-        params.spikeDataType = 'singleUnit'
+        params.spikeDataType = 'singleUnit';
     else
-        params.spikeDataType = 'none'
+        params.spikeDataType = 'none';
     end
 end
 

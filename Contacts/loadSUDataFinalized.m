@@ -1,6 +1,8 @@
-function loadSUData(cellNum, SU);
- dirName = uigetdir('', 'Select base directory')
- SU_ConDir = ([dirName filesep 'ConTA' filesep]);
+function loadSUDataFinalized(cellNum, SU);
+
+ %dirName = uigetdir('', 'Select base directory')
+ dirName = 'C:\Users\shires\Dropbox\NoiseProject\S1_singleunit'
+ SU_ConDir = ([dirName filesep 'ConTA' filesep 'Finalized' filesep]);
  SU_TDir =   ([dirName filesep 'TrialArrays' filesep]);
 
  display(['Loading '  SU.trialArrayName{cellNum}])

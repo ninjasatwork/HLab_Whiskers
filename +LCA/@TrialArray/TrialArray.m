@@ -1,13 +1,13 @@
 classdef TrialArray < handle
-%
-%   TrialArray < handle
-%
-%
-% DHO, 5/08.
-%
-%
-%
-%
+    %
+    %   TrialArray < handle
+    %
+    %
+    % DHO, 5/08.
+    %
+    %
+    %
+    %
     properties
         trials = {};
         orphanBehavTrials = {};
@@ -18,7 +18,7 @@ classdef TrialArray < handle
         depth = NaN; % Recording depth
         recordingLocation = '';
     end
-
+    
     properties (Dependent = true)
         cellNum
         cellCode
@@ -43,7 +43,7 @@ classdef TrialArray < handle
         meanSpikeRateInHz
         stdDevSpikeRateInHz
     end
-
+    
     methods (Access = public)
         function obj = TrialArray(behav_trial_array, spikes_trial_array, varargin)
             %
@@ -51,15 +51,15 @@ classdef TrialArray < handle
             %
             % behav_trial_array: Solo.BehavTrialArray object.
             % spikes_trial_array: LCA.SpikesTrialArray object.
-            % varargin: optional Whisker.WhiskerSignalTrialArray, Whisker.WhiskerTrialLiteArray or 
+            % varargin: optional Whisker.WhiskerSignalTrialArray, Whisker.WhiskerTrialLiteArray or
             %           Whisker.WhiskerMeasurementsTrialArray object.
             %
             %
             if nargin > 0
-
-%                 if ~isa(behav_trial_array,'Solo.BehavTrialArray')
-%                     error('First argument must be a class of type Solo.BehavTrialArray')
-%                 end
+                
+                %                 if ~isa(behav_trial_array,'Solo.BehavTrialArray')
+                %                     error('First argument must be a class of type Solo.BehavTrialArray')
+                %                 end
                 if ~isa(spikes_trial_array,'LCA.SpikesTrialArray')
                     error('Second argument must be a class of type LCA.SpikesTrialArray')
                 end
@@ -75,32 +75,32 @@ classdef TrialArray < handle
                 else
                     whiskerInclude = 0;
                 end
-
+                
                 % Pair corresponding Solo.BehavTrial and LCA.SpikesTrial objects
                 % by trialNum into LCA.Trial objects.
                 trial_nums_behav = behav_trial_array.trialNums;
                 trial_nums_spikes = spikes_trial_array.trialNums;
-
+                
                 % Make only trials where we have both a behavior trial and a spikes trial:
                 common_trial_nums = intersect(trial_nums_spikes, trial_nums_behav);
                 orphan_spikes_trials_with_trial_num_0_ind = find(trial_nums_spikes==0); % Occasionally bitcode is given/read incorrectly, results in trialNum=0.
-
+                
                 % Additionally, include a whisker trial if we find one with a matching trial number
                 % and a WhiskerSignalTrialArray or WhiskerMeasurementsTrialArray was given as an argument.
                 if whiskerInclude
                     trial_nums_whisker = whisker_trial_array.trialNums;
                 end
-
+                
                 if isempty(common_trial_nums)
                     error('No common trial numbers.')
                 end
-
+                
                 n = 1;
                 for k=1:length(common_trial_nums)
                     trial_num = common_trial_nums(k);
                     ind_behav = find(trial_nums_behav==trial_num);
                     ind_spikes = find(trial_nums_spikes==trial_num);
-
+                    
                     if whiskerInclude
                         ind_whisker = find(trial_nums_whisker==trial_num);
                         if length(ind_whisker) > 1
@@ -113,7 +113,7 @@ classdef TrialArray < handle
                     else
                         whiskerIncludeTrial = 0;
                     end
-
+                    
                     if length(ind_spikes) > 1
                         disp(['Trial num ' int2str(trial_num) ' occurs more than once in the SpikesTrialArray---skipping.'])
                     elseif length(ind_behav) > 1
@@ -127,7 +127,7 @@ classdef TrialArray < handle
                         n = n + 1;
                     end
                 end
-
+                
                 % Fill in orphan SpikesTrials, which don't match any BehavTrial:
                 if ~isempty(orphan_spikes_trials_with_trial_num_0_ind)
                     num_orphans_spikes = 1;
@@ -136,22 +136,22 @@ classdef TrialArray < handle
                         num_orphans_spikes = num_orphans_spikes + 1;
                     end
                 end
-
+                
                 obj.performanceRegion = behav_trial_array.performanceRegion;
-
+                
             end
-
-
+            
+            
         end
-
+        
         function set_whiskerTrialTimeOffset(obj, offsetInSec)
             obj.whiskerTrialTimeOffset = offsetInSec;
         end
-
+        
         function r = length(obj)
             r = length(obj.trials);
         end
-
+        
         function r = beamBreakTimes(obj,varargin)
             %
             % r = beamBreakTimes(obj,varargin)
@@ -164,7 +164,7 @@ classdef TrialArray < handle
                 r = r(ismember(obj.trialNums, varargin{1}));
             end
         end
-
+        
         function r = pinDescentOnsetTimes(obj,varargin)
             % r = pinDescentOnsetTimes(obj,varargin)
             %
@@ -175,7 +175,7 @@ classdef TrialArray < handle
                 r = r(ismember(obj.trialNums, varargin{1}));
             end
         end
-
+        
         function r = pinAscentOnsetTimes(obj,varargin)
             % r = pinAscentOnsetTimes(obj,varargin)
             %
@@ -186,7 +186,7 @@ classdef TrialArray < handle
                 r = r(ismember(obj.trialNums, varargin{1}));
             end
         end
-
+        
         function r = answerLickTimes(obj,varargin)
             % r = answerLickTimes(obj,varargin)
             %
@@ -197,7 +197,7 @@ classdef TrialArray < handle
                 r = r(ismember(obj.trialNums, varargin{1}));
             end
         end
-
+        
         function r = spikeCountInTimeWindow(obj, startTimeInSec, endTimeInSec)
             % r = spikeCountInTimeWindow(startTimeInSec, endTimeInSec)
             %
@@ -215,7 +215,7 @@ classdef TrialArray < handle
             %
             r = cellfun(@(x) x.spikeRateInHzTimeWindow(startTimeInSec, endTimeInSec), obj.trials);
         end
-
+        
         function r = meanSpikeRateInHzTimeWindow(obj, startTimeInSec, endTimeInSec)
             %
             % r = MeanSpikeRateInHzTimeWindow(startTimeInSec, endTimeInSec)
@@ -228,7 +228,7 @@ classdef TrialArray < handle
             %
             r = mean(obj.spikeRateInHzTimeWindow(startTimeInSec, endTimeInSec));
         end
-
+        
         function r = stdDevSpikeRateInHzTimeWindow(obj, startTimeInSec, endTimeInSec)
             %
             % r = StdDevSpikeRateInHzTimeWindow(startTimeInSec, endTimeInSec)
@@ -241,8 +241,8 @@ classdef TrialArray < handle
             %
             r = std(obj.spikeRateInHzTimeWindow(startTimeInSec, endTimeInSec),1);
         end
-
-
+        
+        
         %         function [h,se] = PSTH(obj, trial_nums, bin_centers)
         %             %
         %             %             [h,x] = PSTH_resampSE(obj, trial_nums, nbins_or_centers_vector, nsamps)
@@ -277,8 +277,8 @@ classdef TrialArray < handle
         %             se =  std(individualTrialHistograms,0,1)./ sqrt(ntrials);
         %
         %         end
-
-
+        
+        
         function [h,se] = PSTH(obj, trial_nums, bin_centers, varargin)
             %
             %    [h,se] = PSTH(obj, trial_nums, bin_centers, varargin)
@@ -286,11 +286,11 @@ classdef TrialArray < handle
             %    varargin{1} specifies optional vector of alignment times of the same size as trial_nums.
             %
             nbins = length(bin_centers);
-
+            
             if length(bin_centers) < 2
                 error('Input bin_centers must be a vector of bin centers for histogramming.')
             end
-
+            
             if nargin > 3
                 alignmentTimes = varargin{1};
                 if length(alignmentTimes)~=length(trial_nums)
@@ -299,30 +299,30 @@ classdef TrialArray < handle
             else
                 alignmentTimes = zeros(length(trial_nums),1);
             end
-
+            
             ntrials = length(trial_nums);
             individualTrialHistograms = zeros(ntrials,nbins);
             binWidthInSec = bin_centers(2)-bin_centers(1);  % All bins must be equal size for this transformation to Hz.
-
+            
             n=1;
             for k=1:length(trial_nums)
                 ind = find(obj.trialNums==trial_nums(k));
                 if isempty(ind) || length(ind)>1
                     error(['Trial number ' num2str(trial_nums(k)) ' is missing or is not unique.'])
                 end
-
+                
                 st = obj.trials{ind}.spikesTrial.spikeTimes / obj.trials{ind}.spikesTrial.sampleRate;
                 st = st(st > 0); % IMPORTANT: Before histogramming or subtracting alignment offset, remove 0 spike time entries that indicate that no spikes were found.
-
+                
                 st = st - alignmentTimes(n);
                 h0 = hist(st, bin_centers);
                 individualTrialHistograms(n,:) = h0 ./ binWidthInSec;
                 n=n+1;
             end
-
+            
             h = mean(individualTrialHistograms,1);
             se =  std(individualTrialHistograms,0,1)./ sqrt(ntrials);
-
+            
         end
         
         function [h,se] = PSTH_burstSpikes(obj, trial_nums, bin_centers, varargin)
@@ -337,11 +337,11 @@ classdef TrialArray < handle
             %       burst.  Default is 100 Hz.
             %
             nbins = length(bin_centers);
-
+            
             if length(bin_centers) < 2
                 error('Input bin_centers must be a vector of bin centers for histogramming.')
             end
-
+            
             if nargin > 3
                 alignmentTimes = varargin{1};
                 if isempty(alignmentTimes)
@@ -357,33 +357,33 @@ classdef TrialArray < handle
             else
                 InstSpikeRateThresh = 100; % Hz.  Note that a default is also defined in SpikesTrial class.
             end
-
+            
             ntrials = length(trial_nums);
             individualTrialHistograms = zeros(ntrials,nbins);
             binWidthInSec = bin_centers(2)-bin_centers(1);  % All bins must be equal size for this transformation to Hz.
-
+            
             n=1;
             for k=trial_nums
                 ind = find(obj.trialNums==k);
                 if isempty(ind) || length(ind)>1
                     error(['Trial number' num2str(k) 'is missing or is not unique.'])
                 end
-
+                
                 st = obj.trials{ind}.spikesTrial.burstSpikeTimes(InstSpikeRateThresh) / obj.trials{ind}.spikesTrial.sampleRate;
                 st = st(st > 0); % IMPORTANT: Before histogramming or subtracting alignment offset, remove 0 spike time entries that indicate that no spikes were found.
-
+                
                 st = st - alignmentTimes(n);
                 h0 = hist(st, bin_centers);
                 individualTrialHistograms(n,:) = h0 ./ binWidthInSec;
                 n=n+1;
             end
-
+            
             h = mean(individualTrialHistograms,1);
             se =  std(individualTrialHistograms,0,1)./ sqrt(ntrials);
-
+            
         end
-
-
+        
+        
         function R = PSTH_bootstrapped(obj, nboot, trial_nums, bin_centers, varargin)
             %
             %    [h,se] = PSTH_bootstrapped(obj, trial_nums, bin_centers, varargin)
@@ -397,11 +397,11 @@ classdef TrialArray < handle
             %    varargin{1} specifies optional vector of alignment times of the same size as trial_nums.
             %
             nbins = length(bin_centers);
-
+            
             if length(bin_centers) < 2
                 error('Input bin_centers must be a vector of bin centers for histogramming.')
             end
-
+            
             if nargin > 4
                 alignmentTimes = varargin{1};
                 if length(alignmentTimes)~=length(trial_nums)
@@ -410,27 +410,27 @@ classdef TrialArray < handle
             else
                 alignmentTimes = zeros(length(trial_nums),1);
             end
-
+            
             ntrials = length(trial_nums);
             individualTrialHistograms = zeros(ntrials,nbins);
             binWidthInSec = bin_centers(2)-bin_centers(1);  % All bins must be equal size for this transformation to Hz.
-
+            
             n=1;
             for k=trial_nums
                 ind = find(obj.trialNums==k);
                 if isempty(ind) || length(ind)>1
                     error(['Trial number' num2str(k) 'is missing or is not unique.'])
                 end
-
+                
                 st = obj.trials{ind}.spikesTrial.spikeTimes / obj.trials{ind}.spikesTrial.sampleRate;
                 st = st(st > 0); % IMPORTANT: Before histogramming or subtracting alignment offset, remove 0 spike time entries that indicate that no spikes were found.
-
+                
                 st = st - alignmentTimes(n);
                 h0 = hist(st, bin_centers);
                 individualTrialHistograms(n,:) = h0 ./ binWidthInSec;
                 n=n+1;
             end
-
+            
             R = zeros(nboot,nbins);
             for k=1:nboot
                 resampledTrials = zeros(ntrials,nbins);
@@ -440,12 +440,12 @@ classdef TrialArray < handle
                 end
                 R(k,:) = mean(resampledTrials,1);
             end
-
+            
         end
-
-
-
-
+        
+        
+        
+        
         function r = get_all_spike_times(obj, trial_nums, varargin)
             %
             %     r = get_all_spike_times(obj, trial_nums, varargin)
@@ -475,9 +475,9 @@ classdef TrialArray < handle
             if isempty(trial_nums)
                 trial_nums = obj.trialNums;
             end
-
+            
             ntrials = length(trial_nums);
-
+            
             if nargin > 2 && ~isempty(varargin{1})
                 alignmentTimes = varargin{1};
                 if length(alignmentTimes) ~= ntrials
@@ -486,7 +486,7 @@ classdef TrialArray < handle
             else
                 alignmentTimes = zeros(ntrials,1);
             end
-
+            
             restrictWindow = [];
             if nargin > 3
                 restrictWindow = varargin{2};
@@ -496,7 +496,7 @@ classdef TrialArray < handle
                     error('varargin{2} must be equal length as trial_nums')
                 end
             end
-
+            
             if isempty(restrictWindow)
                 r = [];
                 for k=1:ntrials
@@ -517,9 +517,9 @@ classdef TrialArray < handle
                     end
                 end
             end
-
+            
         end
-
+        
         function r = get_all_interspike_intervals(obj, trial_nums, varargin)
             %
             %     r = get_all_interspike_intervals(obj, trial_nums, varargin)
@@ -548,9 +548,9 @@ classdef TrialArray < handle
             if isempty(trial_nums)
                 trial_nums = obj.trialNums;
             end
-
+            
             ntrials = length(trial_nums);
-
+            
             restrictWindow = [];
             if nargin > 2 && ~isempty(varargin{1})
                 restrictWindow = varargin{2};
@@ -560,7 +560,7 @@ classdef TrialArray < handle
                     error('varargin{2} must be equal length as trial_nums')
                 end
             end
-
+            
             if isempty(restrictWindow)
                 r = [];
                 for k=1:ntrials
@@ -581,9 +581,9 @@ classdef TrialArray < handle
                     end
                 end
             end
-
+            
         end
-
+        
         function r = get_all_lick_times(obj, trial_nums, varargin)
             %
             %     r = get_all_lick_times(obj, trial_nums, varargin)
@@ -611,9 +611,9 @@ classdef TrialArray < handle
             if isempty(trial_nums)
                 trial_nums = obj.trialNums;
             end
-
+            
             ntrials = length(trial_nums);
-
+            
             if nargin > 2 && ~isempty(varargin{1})
                 alignmentTimes = varargin{1};
                 if length(alignmentTimes) ~= ntrials
@@ -622,7 +622,7 @@ classdef TrialArray < handle
             else
                 alignmentTimes = zeros(ntrials,1);
             end
-
+            
             restrictWindow = [];
             if nargin > 3
                 restrictWindow = varargin{2};
@@ -632,7 +632,7 @@ classdef TrialArray < handle
                     error('varargin{2} must be equal length as trial_nums')
                 end
             end
-
+            
             if isempty(restrictWindow)
                 r = [];
                 for k=1:ntrials
@@ -654,9 +654,9 @@ classdef TrialArray < handle
                     end
                 end
             end
-
+            
         end
-
+        
         function r = get_all_spike_times_burstSpikes(obj, trial_nums, varargin)
             %
             %     r = get_all_spike_times(obj, trial_nums, varargin)
@@ -691,9 +691,9 @@ classdef TrialArray < handle
             if isempty(trial_nums)
                 trial_nums = obj.trialNums;
             end
-
+            
             ntrials = length(trial_nums);
-
+            
             if nargin > 2 && ~isempty(varargin{1})
                 alignmentTimes = varargin{1};
                 if isempty(alignmentTimes)
@@ -704,13 +704,13 @@ classdef TrialArray < handle
             else
                 alignmentTimes = zeros(ntrials,1);
             end
-
+            
             if nargin > 3 && ~isempty(varargin{2})
                 InstSpikeRateThresh = varargin{2};
             else
                 InstSpikeRateThresh = 100; % Hz.  Note that a default is also defined in SpikesTrial class.
             end
-
+            
             restrictWindow = [];
             if nargin > 4
                 restrictWindow = varargin{3};
@@ -720,7 +720,7 @@ classdef TrialArray < handle
                     error('varargin{2} must be equal length as trial_nums')
                 end
             end
-
+            
             if isempty(restrictWindow)
                 r = [];
                 for k=1:ntrials
@@ -741,11 +741,11 @@ classdef TrialArray < handle
                     end
                 end
             end
-
+            
         end
-
-
-
+        
+        
+        
         function handles = plot_spike_raster(obj, trial_nums, varargin)
             %
             %     [] = plot_spike_raster(obj, trial_nums, varargin)
@@ -764,8 +764,8 @@ classdef TrialArray < handle
             %     varargin{3}, if the string 'lines' is given, raster is plotted with
             %           vertical lines instead of dots.  Dots are the default.
             %
-
-
+            
+            
             if nargin==2 % default is to plot in 'Sequential' mode.
                 plotTypeString = 'Sequential';
                 allSpikeTimes = obj.get_all_spike_times(trial_nums);
@@ -792,9 +792,9 @@ classdef TrialArray < handle
             else
                 error('Too many inputs.')
             end
-
+            
             % Leave error checking to get_all_spike_times().
-
+            
             %             cla;
             fs=10;
             switch plotTypeString
@@ -814,7 +814,7 @@ classdef TrialArray < handle
                     end
                     ylabel('Behavior trial number','FontSize',fs)
                     xlabel('Sec','FontSize',fs)
-
+                    
                 case 'Sequential'
                     if ~isempty(allSpikeTimes)
                         if plotSymType==0
@@ -831,15 +831,15 @@ classdef TrialArray < handle
                     end
                     ylabel('Trial number','FontSize',fs)
                     xlabel('Sec','FontSize',fs)
-
+                    
                 otherwise
                     error('Invalid string argument.')
             end
         end
-
+        
         function handles = plot_lick_raster(obj, trial_nums, varargin)
             %
-            %   Plots all beam breaks as rasterplot. 
+            %   Plots all beam breaks as rasterplot.
             %
             %   Returns vector of handles to line objects that make up the
             %   raster tick marks.
@@ -864,7 +864,7 @@ classdef TrialArray < handle
             %   that both lick times and spike times occur over the range, say, of [0 s, 5 s].
             %
             %
-
+            
             if nargin==2 % default is to plot in 'Sequential' mode.
                 plotTypeString = 'Sequential';
                 allLickTimes = obj.get_all_lick_times(trial_nums);
@@ -891,7 +891,7 @@ classdef TrialArray < handle
             else
                 error('Too many inputs.')
             end
-
+            
             % Leave error checking to get_all_spike_times().
             %             cla;
             fs=10;
@@ -912,7 +912,7 @@ classdef TrialArray < handle
                     end
                     ylabel('Behavior trial number','FontSize',fs)
                     xlabel('Sec','FontSize',fs)
-
+                    
                 case 'Sequential'
                     if ~isempty(allLickTimes)
                         if plotSymType==0
@@ -929,16 +929,16 @@ classdef TrialArray < handle
                     end
                     ylabel('Trial number','FontSize',fs)
                     xlabel('Sec','FontSize',fs)
-
+                    
                 otherwise
                     error('Invalid string argument.')
             end
         end
-
-
-
-
-
+        
+        
+        
+        
+        
         function [] = plot_spike_raster_burstSpikes(obj, trial_nums, varargin)
             %
             %     [] = plot_spike_raster_burstSpikes(obj, trial_nums, varargin)
@@ -958,7 +958,7 @@ classdef TrialArray < handle
             %       that determines when spikes are considered to be within a
             %       burst.  Default is 100 Hz.
             %
-
+            
             if nargin==2 % default is to plot in 'Sequential' mode.
                 plotTypeString = 'Sequential';
                 allSpikeTimes = obj.get_all_spike_times_burstSpikes(trial_nums);
@@ -983,10 +983,10 @@ classdef TrialArray < handle
             else
                 error('Too many inputs.')
             end
-
+            
             % Leave error checking to get_all_spike_times().
-
-
+            
+            
             cla
             switch plotTypeString
                 case 'BehavTrialNum'
@@ -995,19 +995,19 @@ classdef TrialArray < handle
                     end
                     ylabel('Behavior trial number','FontSize',15)
                     xlabel('Sec','FontSize',15)
-
+                    
                 case 'Sequential'
                     if ~isempty(allSpikeTimes)
                         plot(allSpikeTimes(:,3), allSpikeTimes(:,1), 'k.')
                     end
                     ylabel('Sequential trial number','FontSize',15)
                     xlabel('Sec','FontSize',15)
-
+                    
                 otherwise
                     error('Invalid string argument.')
             end
         end
-
+        
         function [Y,T] = get_whisker_curvature(obj, tid, varargin)
             %
             %     Y = get_whisker_curvature(obj, tid)
@@ -1017,9 +1017,9 @@ classdef TrialArray < handle
             %    tid: whisker trajectory ID.
             %
             %   Y is cell array of curvature vectors (units of pixels^(-1)).
-            %   T is cell array of time vectors of same length as Y (units of seconds). 
+            %   T is cell array of time vectors of same length as Y (units of seconds).
             %
-            %   
+            %
             %
             if nargin > 2
                 trial_nums = varargin{1};
@@ -1056,9 +1056,9 @@ classdef TrialArray < handle
             %    tid: whisker trajectory ID.
             %
             %   Y is cell array of curvatureDot vectors.
-            %   T is cell array of time vectors of same length as Y. 
+            %   T is cell array of time vectors of same length as Y.
             %
-            % 
+            %
             if nargin > 2
                 trial_nums = varargin{1};
                 trial_nums = trial_nums(ismember(trial_nums, obj.trialNums));
@@ -1173,9 +1173,9 @@ classdef TrialArray < handle
             %    tid: whisker trajectory ID.
             %
             %   Y is cell array of velocity vectors.
-            %   T is cell array of time vectors of same length as Y. 
+            %   T is cell array of time vectors of same length as Y.
             %
-            % 
+            %
             if nargin > 2
                 trial_nums = varargin{1};
                 trial_nums = trial_nums(ismember(trial_nums, obj.trialNums));
@@ -1212,13 +1212,13 @@ classdef TrialArray < handle
             %
             %
             if nargin > 3
-               STD_thresh = varargin{1};
+                STD_thresh = varargin{1};
             else
-               STD_thresh = 5;%5;
+                STD_thresh = 5;%5;
             end
             
             [Y,T] = obj.get_whisker_curvature(tid, trial_nums);
-%             [Y,T] = obj.get_whisker_curvatureDot(tid, trial_nums);
+            %             [Y,T] = obj.get_whisker_curvatureDot(tid, trial_nums);
             
             baselineTimeEnd = 0.3; % sec
             
@@ -1241,17 +1241,17 @@ classdef TrialArray < handle
                 % Find first contact:
                 c = t(find((abs(y)>thresh) & (t>0.4) & t <= 1,1,'first'));
                 r{k} = c;
-%                 
-%                 plot(t,y,'k-')
-%                 line([min(t) max(t)],[thresh thresh],'Color','r','LineStyle','--')
-%                 line([min(t) max(t)],[-thresh -thresh],'Color','r','LineStyle','--')
-%                 title(int2str(k)); xlim([0 1.1])
-%                 if isempty(c)
-%                     title('No contacts')
-%                 else
-%                     line([c c],[min(y) max(y)],'LineStyle','--','Color','g')
-%                 end
-%                 pause; cla
+                %
+                %                 plot(t,y,'k-')
+                %                 line([min(t) max(t)],[thresh thresh],'Color','r','LineStyle','--')
+                %                 line([min(t) max(t)],[-thresh -thresh],'Color','r','LineStyle','--')
+                %                 title(int2str(k)); xlim([0 1.1])
+                %                 if isempty(c)
+                %                     title('No contacts')
+                %                 else
+                %                     line([c c],[min(y) max(y)],'LineStyle','--','Color','g')
+                %                 end
+                %                 pause; cla
             end
         end
         
@@ -1316,13 +1316,13 @@ classdef TrialArray < handle
         end
         
         
-        function [whiskingEpochs,nonWhiskingEpochs] = detectWhiskingEpochs(obj, tid, trial_nums, varargin) 
+        function [whiskingEpochs,nonWhiskingEpochs] = detectWhiskingEpochs(obj, tid, trial_nums, varargin)
             %
             %   [whiskingEpochs,nonWhiskingEpochs] = detectWhiskingEpochs(obj, tid, trial_nums, varargin)
             %
-            % varargin{1}: Optional 1 x 2 vector of form 
+            % varargin{1}: Optional 1 x 2 vector of form
             % [whiskingPercentile nonWhiskingPercentile]. Gives thresholds
-            % in units of percentile of 
+            % in units of percentile of
             % whisker position observations after filtering at whisking frequency,
             % differentiating to get velocity, rectifying, and smoothing to get
             % envelope. Percentile is computed across all trials in trial_nums.
@@ -1331,23 +1331,23 @@ classdef TrialArray < handle
             % nonWhiskingPercentile are scored as occuring during non-whisking
             % epochs. Default value is [75 25].
             %
-            % varargin{2}: Optional span of moving average in units of samples. 
-            %   Must be odd. Passed as argument to smooth(x,varargin{2},'moving') 
+            % varargin{2}: Optional span of moving average in units of samples.
+            %   Must be odd. Passed as argument to smooth(x,varargin{2},'moving')
             %   and used to smooth the whisking-band filtered, differentiated,
             %   rectified whisker position signal in order to get the envelope
             %   of the signal. Default is 15.
             %
             % varargin{3}: Optional threshold for number of contiguous individual
-            %   samples that must be scored as whisking (or nonwhisking) 
+            %   samples that must be scored as whisking (or nonwhisking)
             %   and contiguous in order for them to be counted as an epoch
-            %   of whisking (or non-whisking). Default is 25 
+            %   of whisking (or non-whisking). Default is 25
             %   (i.e., 50 ms for 500 Hz sampling).
             %
             % N.B.: Because detectWhiskingEpochs() operates based on percentile
             %   values, it's important to pass trial_nums that include the
             %   full range of whisking behavior. Typically this should include
-            %   all or most trials from a behavioral session. 
-            %  
+            %   all or most trials from a behavioral session.
+            %
             %   Further, it may be necessary to set all parameters separately
             %   for each session after inspection of the data.
             %
@@ -1355,10 +1355,10 @@ classdef TrialArray < handle
             %
             %   whiskingEpochs: a cell array of length(trial_nums).
             %   nonWhiskingEpochs: a cell array of length(trial_nums).
-            %       
+            %
             %   Each entry of these cell arrays is either empty (if no
-            %   epochs were found) or contains an N x 2 matrix of form: 
-            %   [epoch1StartTime epoch1EndTime; 
+            %   epochs were found) or contains an N x 2 matrix of form:
+            %   [epoch1StartTime epoch1EndTime;
             %    epoch2StartTime epoch2EndTime
             %    etc...                       ]
             %
@@ -1375,7 +1375,7 @@ classdef TrialArray < handle
                 whiskingPercentile = 75;
                 nonWhiskingPercentile = 35;
             end
-                           
+            
             if nargin > 4
                 span = varargin{2};
                 if ~mod(span,2)
@@ -1388,26 +1388,26 @@ classdef TrialArray < handle
             if nargin > 5
                 minEpochSizeInSamples = varargin{3};
             else
-                minEpochSizeInSamples = 25;
+                minEpochSizeInSamples = 60;
             end
             
             ntrials=length(trial_nums);
             
             [Y,T] = obj.get_whisker_position(tid, trial_nums);
-             
+            
             % Filter whisker position at whisking frequencies:
             bandPassCutOffsInHz = [5 25];
             
             ind = find(obj.trialNums==trial_nums(1));
             sampleRate = 1 / obj.trials{ind}.whiskerTrial.framePeriodInSec; % Assume all trials taken at same frame rate!!!
-
-%             fp = unique(cellfun(@(x) x.whiskerTrial.framePeriodInSec, obj.trials(trial_nums)));
-%             if length(fp) ~= 1
-%                 error('detectWhiskingEpochs requires video sampling rate to be same for all trials.')
-%             else
-%                 sampleRate = 1/fp;
-%             end
-%             disp(num2str(sampleRate))
+            
+            %             fp = unique(cellfun(@(x) x.whiskerTrial.framePeriodInSec, obj.trials(trial_nums)));
+            %             if length(fp) ~= 1
+            %                 error('detectWhiskingEpochs requires video sampling rate to be same for all trials.')
+            %             else
+            %                 sampleRate = 1/fp;
+            %             end
+            %             disp(num2str(sampleRate))
             
             
             W1 = bandPassCutOffsInHz(1) / (sampleRate/2);
@@ -1418,25 +1418,29 @@ classdef TrialArray < handle
             YY = cell(1,ntrials);
             for k=1:ntrials
                 y = Y{k};
+                ynans = find(isnan(y));
+                y(ynans(ynans>=length(y)-10 | ynans <=10)) = 0;
+                y(find(isnan(y))) =  nanmean(y(repmat(find(isnan(y)),21,1)+repmat([-10:10]',1,sum(isnan(y))))); %interpolate NANs
+                y(find(isnan(y))) = nanmean(y);    
                 yy = filtfilt(b, a, y);
                 yyy = smooth(abs([0 diff(yy)]),span);
                 YY{k} = yyy;
-%                 t=T{k};
-%                 plot(t,y,'k-'); hold on
-%                 plot(t,yy,'r-')
-%                 plot(t,yyy,'g-')
-%                 title(int2str(k)); xlim([0 1.1])
-%                 pause; cla
+                %                 t=T{k};
+                %                 plot(t,y,'k-'); hold on
+                %                 plot(t,yy,'r-')
+                %                 plot(t,yyy,'g-')
+                %                 title(int2str(k)); xlim([0 1.1])
+                %                 pause; cla
             end
-
+            
             % Compute percentile values on all samples from trials
             % in trial_nums.  Thresholds are specified in terms of
             % these percentiles.
             y = cell2mat(YY(:));
-
+            
             thresh_above_whisking = prctile(y,whiskingPercentile);
             thresh_below_nonwhisking = prctile(y,nonWhiskingPercentile);
-%             thresh_hysteresis = (thresh_above_whisking + thresh_below_nonwhisking)/2;
+            %             thresh_hysteresis = (thresh_above_whisking + thresh_below_nonwhisking)/2;
             
             whiskingEpochs = cell(1,ntrials);
             nonWhiskingEpochs = cell(1,ntrials);
@@ -1448,17 +1452,17 @@ classdef TrialArray < handle
                 nonwhisking = yy < thresh_below_nonwhisking;
                 
                 % Identify contigous blocks ("epochs") of whisking:
-                y = whisking; 
+                y = whisking;
                 if max(y) > 0
                     runs = LCA.contiguous(y,1); runs = runs{2};
                     len = runs(:,2) - runs(:,1) + 1;
-                    runs = runs(len >= minEpochSizeInSamples, :); 
+                    runs = runs(len >= minEpochSizeInSamples, :);
                     runTimes = zeros(size(runs));
                     for j=1:size(runs,1)
                         runTimes(j,:) = t(runs(j,:));
                     end
                     runTimes = runTimes + obj.whiskerTrialTimeOffset; % Compensate for any difference between video and physiology triggering times.
-                    whiskingEpochs{k} = runTimes; 
+                    whiskingEpochs{k} = runTimes;
                 end
                 
                 y = nonwhisking;
@@ -1476,42 +1480,44 @@ classdef TrialArray < handle
                 %---------------------------------------------------------
                 %-- Plot to check parameters and performance--------------
                 %---------------------------------------------------------
-%                 y = Y{k};
-%                 %                 plot(t,y,'k-'); hold on
-%                 yyy = filtfilt(b, a, y);
-%                 ymin = min(yyy); ymax = max(yyy);
-%                 hold on
-%                 x = whiskingEpochs{k} - obj.whiskerTrialTimeOffset;  
+%                                 y = Y{k};
+%                                                 y(find(isnan(y))) =  nanmean(y(repmat(find(isnan(y)),21,1)+repmat([-10:10]',1,sum(isnan(y))))); %interpolate NANs
+% 
+%                                 %                 plot(t,y,'k-'); hold on
+%                                 yyy = filtfilt(b, a, y);
+%                                 ymin = min(yyy); ymax = max(yyy);
+%                                 hold on
+%                                 x = whiskingEpochs{k} - obj.whiskerTrialTimeOffset;
 %                 
-%                 if ~isempty(x)
-%                     for j=1:size(x,1)
-% % %                         patch([x(j,1) x(j,1) x(j,2) x(j,2)], [ymin ymax ymax ymin],[1 0 0])
-%                           p = patch([x(j,1) x(j,1) x(j,2) x(j,2)], [ymin ymax ymax ymin],[1 0 0],'FaceAlpha',0.2,'EdgeColor','none');
-%                           uistack(p,'bottom')
-%                     end
-%                 end
-%                 x = nonWhiskingEpochs{k} - obj.whiskerTrialTimeOffset;
-%                 if ~isempty(x)
-%                     for j=1:size(x,1)
-% % %                         patch([x(j,1) x(j,1) x(j,2) x(j,2)], [ymin ymax ymax ymin],[0 1 0])
-%                         p = patch([x(j,1) x(j,1) x(j,2) x(j,2)], [ymin ymax ymax ymin],[0 1 0],'FaceAlpha',0.2,'EdgeColor','none');
-%                         uistack(p,'bottom')
-%                     end
-%                 end
-%                 plot(t,yyy,'k-'); hold on
-%                 plot(t,yy,'g-')
-%                 line([min(t) max(t)],[thresh_above_whisking thresh_above_whisking],'Color','m','LineStyle','--')
-%                 line([min(t) max(t)],[thresh_below_nonwhisking thresh_below_nonwhisking],'Color','c','LineStyle','--')
-% %                 line([min(t) max(t)],[thresh_hysteresis thresh_hysteresis],'Color','k','LineStyle','--')
-%                 title([obj.cellNum obj.cellCode ': ' int2str(k) '/' int2str(ntrials)]); xlim([0 1.1])
-%                 pause; cla
-                %---------------------------------------------------------
-            end            
-                      
+%                                 if ~isempty(x)
+%                                     for j=1:size(x,1)
+%                 % %                         patch([x(j,1) x(j,1) x(j,2) x(j,2)], [ymin ymax ymax ymin],[1 0 0])
+%                                           p = patch([x(j,1) x(j,1) x(j,2) x(j,2)], [ymin ymax ymax ymin],[1 0 0],'FaceAlpha',0.2,'EdgeColor','none');
+%                                           uistack(p,'bottom')
+%                                     end
+%                                 end
+%                                 x = nonWhiskingEpochs{k} - obj.whiskerTrialTimeOffset;
+%                                 if ~isempty(x)
+%                                     for j=1:size(x,1)
+%                 % %                         patch([x(j,1) x(j,1) x(j,2) x(j,2)], [ymin ymax ymax ymin],[0 1 0])
+%                                         p = patch([x(j,1) x(j,1) x(j,2) x(j,2)], [ymin ymax ymax ymin],[0 1 0],'FaceAlpha',0.2,'EdgeColor','none');
+%                                         uistack(p,'bottom')
+%                                     end
+%                                 end
+%                                 plot(t,yyy,'k-'); hold on
+%                                 plot(t,yy,'g-')
+%                                 line([min(t) max(t)],[thresh_above_whisking thresh_above_whisking],'Color','m','LineStyle','--')
+%                                 line([min(t) max(t)],[thresh_below_nonwhisking thresh_below_nonwhisking],'Color','c','LineStyle','--')
+%                 %                 line([min(t) max(t)],[thresh_hysteresis thresh_hysteresis],'Color','k','LineStyle','--')
+%                                 title([obj.cellNum obj.cellCode ': ' int2str(k) '/' int2str(ntrials)]); xlim([0 4.5])
+%                                  pause; cla
+%                % ---------------------------------------------------------
+            end
+            
         end
-       
-       
-       
+        
+        
+        
         function [p,pse,h,hse] = PoissonTestAcrossTrials(obj, trial_nums, bin_centers)
             %
             % [p,pse,h,hse] = PoissonTestAcrossTrials(obj, trial_nums, bin_centers)
@@ -1519,34 +1525,34 @@ classdef TrialArray < handle
             %
             %
             nbins = length(bin_centers);
-
+            
             if length(bin_centers) < 2
                 error('Input bin_centers must be a vector of bin centers for histogramming.')
             end
-
+            
             ntrials = length(trial_nums);
             individualTrialHistograms = zeros(ntrials,nbins);
-
+            
             n=1;
             for k=trial_nums
                 ind = find(obj.trialNums==k);
                 if isempty(ind) || length(ind)>1
                     error(['Trial number' num2str(k) 'is missing or is not unique.'])
                 end
-
+                
                 st = obj.trials{ind}.spikesTrial.spikeTimes / obj.trials{ind}.spikesTrial.sampleRate;
                 h0 = hist(st((st>0)), bin_centers); % Before histogramming, remove 0 spike time entries that indicate that no spikes were found.
                 individualTrialHistograms(n,:) = h0; % spike count for bin
                 n=n+1;
             end
-
+            
             h = mean(individualTrialHistograms,1);
             hse =  std(individualTrialHistograms,0,1)./ sqrt(ntrials);
-
+            
             lambda = repmat(h, [ntrials 1]);
-
+            
             y = poisspdf(individualTrialHistograms, lambda);
-
+            
             p = mean(y,1);
             pse =  std(y,0,1)./ sqrt(ntrials);
         end
@@ -1559,24 +1565,24 @@ classdef TrialArray < handle
             %
             %   time_window_in_sec_1: [startTime stopTime].
             %   time_window_in_sec_2: [startTime stopTime].
-            %   
+            %
             %   For time windows, startTime and stopTime are inclusive.
             %
-            %   Tests for statistical significance of a difference in mean firing rates 
+            %   Tests for statistical significance of a difference in mean firing rates
             %   specified by two time windows, rate(time_window_in_sec_2) - rate(time_window_in_sec_1).
-            %   
-            %   Method: 
+            %
+            %   Method:
             %   1. Get firing rate in both time windows for every trial, R2_i, R1_i.
             %   2. Calculate true difference in mean firing rate, spikeRateDiff = <R2> - <R1>.
-            %   3. Repeat nsamps times: 
+            %   3. Repeat nsamps times:
             %       -Shuffle labels (R1 vs. R2: i.e., which time window is which).
             %       -Compute spikeRateDiffShuffled = <R2_shuff> - <R1_shuff>.
             %   4. Compute pval as 1 minus fraction of shuffled values as or more extreme than
-            %      true spikeRateDiff, making a two-tailed test. 
-            %     
+            %      true spikeRateDiff, making a two-tailed test.
+            %
             %
             ntrials = length(trial_nums);
-           
+            
             R1 = obj.spikeRateInHzTimeWindow(time_window_in_sec_1(1), time_window_in_sec_1(2));
             R2 = obj.spikeRateInHzTimeWindow(time_window_in_sec_2(1), time_window_in_sec_2(2));
             
@@ -1594,14 +1600,14 @@ classdef TrialArray < handle
             
             R = [R1 R2];
             spikeRateDiffShuffled = zeros(nsamps,1);
-
+            
             for k=1:nsamps
                 r = randperm(2*ntrials);
                 R1shuf = R(r(1:ntrials));
                 R2shuf = R(r((ntrials+1):end));
                 spikeRateDiffShuffled(k) = mean(R2shuf) - mean(R1shuf);
             end
-
+            
             y = 0.001:.001:1;
             x = quantile(spikeRateDiffShuffled, y);
             [x,I,junk] = unique(x); y = y(I); % throw out non-unique x values so can use interp1
@@ -1624,16 +1630,16 @@ classdef TrialArray < handle
                 end
             end
             
-%             figure; subplot(121); plot(x,y); xlabel('Resampled difference in spike rates'); ylabel('Quantile')
-%             subplot(122)
-%             hist(spikeRateDiffShuffled); hold on
-%             plot(spikeRateDiff, 1, 'r*')
-%             set(gca, 'box','off')
-%             xlabel('Spike rate difference, <R2>-<R1>')
-%             ylabel(['Count out of ' num2str(nsamps) ' resamples'])
-%             title(['P = ' num2str(pval)])             
+            %             figure; subplot(121); plot(x,y); xlabel('Resampled difference in spike rates'); ylabel('Quantile')
+            %             subplot(122)
+            %             hist(spikeRateDiffShuffled); hold on
+            %             plot(spikeRateDiff, 1, 'r*')
+            %             set(gca, 'box','off')
+            %             xlabel('Spike rate difference, <R2>-<R1>')
+            %             ylabel(['Count out of ' num2str(nsamps) ' resamples'])
+            %             title(['P = ' num2str(pval)])
         end
-
+        
         function [spikeCountDiff, spikeCountDiffShuffled, pval] = PermutationTest_SpikeCountDiffExpectedVsEvoked(obj, ...
                 trial_nums, baseline_time_window_in_sec, evoked_time_window_in_sec, nsamps)
             %
@@ -1741,8 +1747,8 @@ classdef TrialArray < handle
             %             ylabel(['Count out of ' num2str(nsamps) ' resamples'])
             %             title(['P = ' num2str(pval)])
         end
-
-
+        
+        
         function [distanceIndex, distanceIndexResampled, pval] = PermutationTest_DistanceIndex(obj, trial_nums1, ...
                 trial_nums2, histogram_bin_centers, nsamps, varargin)
             %
@@ -1758,19 +1764,19 @@ classdef TrialArray < handle
             %   so the raw data that go into the histogram are really restricted to
             %   [startTimeInclusive - 1/2 * binwidth, startTimeInclusive + 1/2 * binwidth].
             %
-
+            
             nbins = length(histogram_bin_centers);
-
+            
             if length(histogram_bin_centers) < 2
                 error('Input histogram_bin_centers must be a vector of bin centers for histogramming.')
             end
-
+            
             ntrials1 = length(trial_nums1);
             ntrials2 = length(trial_nums2);
             ntrialsTotal = ntrials1 + ntrials2;
-
+            
             individualTrialHistograms = zeros(ntrialsTotal, nbins);
-
+            
             binWidthInSec = histogram_bin_centers(2)-histogram_bin_centers(1);  % All bins must be equal size for this transformation to Hz.
             
             trialNums = obj.trialNums; % keep this out of any loops; it's slow.
@@ -1778,16 +1784,16 @@ classdef TrialArray < handle
             n=1;
             for k=[trial_nums1 trial_nums2]
                 ind = trialNums==k;
-                if sum(ind) ~= 1 
+                if sum(ind) ~= 1
                     error(['Trial number' num2str(k) 'is missing or is not unique.'])
                 end
                 st = obj.trials{ind}.spikesTrial.spikeTimes / obj.trials{ind}.spikesTrial.sampleRate;
-                                
+                
                 h0 = hist(st((st>0)), histogram_bin_centers); % Before histogramming, remove 0 spike time entries that indicate that no spikes were found.
                 individualTrialHistograms(n,:) = h0 ./ binWidthInSec;
                 n=n+1;
             end
-
+            
             if nargin > 5
                 region = varargin{1};
                 if numel(region) ~= 2
@@ -1795,16 +1801,16 @@ classdef TrialArray < handle
                 end
                 startTimeInclusive = region(1);
                 stopTimeInclusive = region(2);
-
+                
                 ind = histogram_bin_centers >= startTimeInclusive & histogram_bin_centers <= stopTimeInclusive;
                 individualTrialHistograms = individualTrialHistograms(:,ind);
             end
-
+            
             histMean1 = mean(individualTrialHistograms(1:ntrials1,:),1);
             histMean2 = mean(individualTrialHistograms((ntrials1+1):end,:),1);
-
+            
             distanceIndex = sqrt(sum((histMean2-histMean1).^2));
-
+            
             % Do permutation test by shuffling labels for two groups of trials.
             distanceIndexResampled = zeros(nsamps,1); n=1;
             for k=1:nsamps
@@ -1816,12 +1822,12 @@ classdef TrialArray < handle
                 distanceIndexResampled(n) = sqrt(sum((histMean2-histMean1).^2));
                 n=n+1;
             end
-
+            
             y = 0.001:.001:1;
             x = quantile(distanceIndexResampled, y);
             [x,I,junk] = unique(x); y = y(I); % throw out non-unique x values so can use interp1
-
-
+            
+            
             %   figure; plot(x,y); xlabel('Resampled distance index'); ylabel('Quantile')
             %             figure;
             %             hist(distanceIndexResampled); hold on
@@ -1829,7 +1835,7 @@ classdef TrialArray < handle
             %             set(gca, 'box','off')
             %             xlabel('Euclidean distance between histograms')
             %             ylabel(['Count out of ' num2str(nsamps) ' resamples'])
-
+            
             if distanceIndex > max(distanceIndexResampled)
                 pval = 1/nsamps; % rather,  pval < 1/nsamps.
                 %                 title(['P < ' num2str(pval)])
@@ -1842,8 +1848,8 @@ classdef TrialArray < handle
                 %                 title(['P = ' num2str(pval)])
             end
         end
-
-
+        
+        
         function [distanceIndex, distanceIndexResampled, pval] = ...
                 PermutationTest_DistanceIndex_burstSpikes(obj, trial_nums1, trial_nums2, histogram_bin_centers, nsamps, varargin)
             %
@@ -1864,27 +1870,27 @@ classdef TrialArray < handle
             %       that determines when spikes are considered to be within a
             %       burst.  Default is 100 Hz.
             %
-
+            
             nbins = length(histogram_bin_centers);
-
+            
             if length(histogram_bin_centers) < 2
                 error('Input histogram_bin_centers must be a vector of bin centers for histogramming.')
             end
-
+            
             ntrials1 = length(trial_nums1);
             ntrials2 = length(trial_nums2);
             ntrialsTotal = ntrials1 + ntrials2;
-
+            
             individualTrialHistograms = zeros(ntrialsTotal, nbins);
-
+            
             binWidthInSec = histogram_bin_centers(2)-histogram_bin_centers(1);  % All bins must be equal size for this transformation to Hz.
-
+            
             if nargin > 6
                 InstSpikeRateThresh = varargin{2};
             else
                 InstSpikeRateThresh = 100; % Hz.  Note that a default is also defined in SpikesTrial class.
             end
-
+            
             trialNums = obj.trialNums; % keep this out of any loops; it's slow.
             n=1;
             for k=[trial_nums1 trial_nums2]
@@ -1893,12 +1899,12 @@ classdef TrialArray < handle
                     error(['Trial number' num2str(k) 'is missing or is not unique.'])
                 end
                 st = obj.trials{ind}.spikesTrial.burstSpikeTimes(InstSpikeRateThresh) / obj.trials{ind}.spikesTrial.sampleRate;
-
+                
                 h0 = hist(st((st>0)), histogram_bin_centers); % Before histogramming, remove 0 spike time entries that indicate that no spikes were found.
                 individualTrialHistograms(n,:) = h0 ./ binWidthInSec;
                 n=n+1;
             end
-
+            
             if nargin > 5 && ~isempty(varargin{1})
                 region = varargin{1};
                 if numel(region) ~= 2
@@ -1906,16 +1912,16 @@ classdef TrialArray < handle
                 end
                 startTimeInclusive = region(1);
                 stopTimeInclusive = region(2);
-
+                
                 ind = histogram_bin_centers >= startTimeInclusive & histogram_bin_centers <= stopTimeInclusive;
                 individualTrialHistograms = individualTrialHistograms(:,ind);
             end
-
+            
             histMean1 = mean(individualTrialHistograms(1:ntrials1,:),1);
             histMean2 = mean(individualTrialHistograms((ntrials1+1):end,:),1);
-
+            
             distanceIndex = sqrt(sum((histMean2-histMean1).^2));
-
+            
             % Do permutation test by shuffling labels for two groups of trials.
             distanceIndexResampled = zeros(nsamps,1); n=1;
             for k=1:nsamps
@@ -1927,12 +1933,12 @@ classdef TrialArray < handle
                 distanceIndexResampled(n) = sqrt(sum((histMean2-histMean1).^2));
                 n=n+1;
             end
-
+            
             y = 0.001:.001:1;
             x = quantile(distanceIndexResampled, y);
             [x,I,junk] = unique(x); y = y(I); % throw out non-unique x values so can use interp1
-
-
+            
+            
             %   figure; plot(x,y); xlabel('Resampled distance index'); ylabel('Quantile')
             %             figure;
             %             hist(distanceIndexResampled); hold on
@@ -1940,7 +1946,7 @@ classdef TrialArray < handle
             %             set(gca, 'box','off')
             %             xlabel('Euclidean distance between histograms')
             %             ylabel(['Count out of ' num2str(nsamps) ' resamples'])
-
+            
             if distanceIndex > max(distanceIndexResampled)
                 pval = 1/nsamps; % rather,  pval < 1/nsamps.
                 %                 title(['P < ' num2str(pval)])
@@ -1952,10 +1958,10 @@ classdef TrialArray < handle
                 pval = 1-yi;
                 %                 title(['P = ' num2str(pval)])
             end
-
-
+            
+            
         end
-
+        
         function [stat, statResampled, pval] = ...
                 PermutationTest_PeakAbsSpikeRateChange(obj, trial_nums1, trial_nums2, histogram_bin_centers, baseline_bins, nsamps, varargin)
             %
@@ -1980,21 +1986,21 @@ classdef TrialArray < handle
             %   so the raw data that go into the histogram are really restricted to
             %   [startTimeInclusive - 1/2 * binwidth, startTimeInclusive + 1/2 * binwidth].
             %
-
+            
             nbins = length(histogram_bin_centers);
-
+            
             if length(histogram_bin_centers) < 2
                 error('Input histogram_bin_centers must be a vector of bin centers for histogramming.')
             end
-
+            
             ntrials1 = length(trial_nums1);
             ntrials2 = length(trial_nums2);
             ntrialsTotal = ntrials1 + ntrials2;
-
+            
             individualTrialHistograms = zeros(ntrialsTotal, nbins);
-
+            
             binWidthInSec = histogram_bin_centers(2)-histogram_bin_centers(1);  % All bins must be equal size for this transformation to Hz.
-
+            
             trialNums = obj.trialNums; % keep this out of any loops; it's slow.
             n=1;
             for k=[trial_nums1 trial_nums2]
@@ -2003,12 +2009,12 @@ classdef TrialArray < handle
                     error(['Trial number' num2str(k) 'is missing or is not unique.'])
                 end
                 st = obj.trials{ind}.spikesTrial.spikeTimes / obj.trials{ind}.spikesTrial.sampleRate;
-
+                
                 h0 = hist(st((st>0)), histogram_bin_centers); % Before histogramming, remove 0 spike time entries that indicate that no spikes were found.
                 individualTrialHistograms(n,:) = h0 ./ binWidthInSec;
                 n=n+1;
             end
-
+            
             if nargin > 6
                 region = varargin{1};
                 if numel(region) ~= 2
@@ -2016,19 +2022,19 @@ classdef TrialArray < handle
                 end
                 startTimeInclusive = region(1);
                 stopTimeInclusive = region(2);
-
+                
                 ind = histogram_bin_centers >= startTimeInclusive & histogram_bin_centers <= stopTimeInclusive;
                 individualTrialHistograms = individualTrialHistograms(:,ind);
             end
-
+            
             histMean1 = mean(individualTrialHistograms(1:ntrials1,:),1);
             histMean2 = mean(individualTrialHistograms((ntrials1+1):end,:),1);
-
+            
             histMean1 = histMean1 - mean(histMean1(baseline_bins)); % baseline subtract
             histMean2 = histMean2 - mean(histMean2(baseline_bins));
-
+            
             stat = abs(max(abs(histMean2)) - max(abs(histMean1))); % Difference in maximum abs. value spike rate changes.
-
+            
             % Do permutation test by shuffling labels for two groups of trials.
             statResampled = zeros(nsamps,1); n=1;
             for k=1:nsamps
@@ -2040,12 +2046,12 @@ classdef TrialArray < handle
                 statResampled(n) = abs(max(abs(histMean2)) - max(abs(histMean1))); % Difference in maximum abs. value spike rate changes.
                 n=n+1;
             end
-
+            
             y = 0.001:.001:1;
             x = quantile(statResampled, y);
             [x,I,junk] = unique(x); y = y(I); % throw out non-unique x values so can use interp1
-
-
+            
+            
             %   figure; plot(x,y); xlabel('Resampled distance index'); ylabel('Quantile')
             %             figure;
             %             hist(distanceIndexResampled); hold on
@@ -2053,7 +2059,7 @@ classdef TrialArray < handle
             %             set(gca, 'box','off')
             %             xlabel('Euclidean distance between histograms')
             %             ylabel(['Count out of ' num2str(nsamps) ' resamples'])
-
+            
             if stat > max(statResampled)
                 pval = 1/nsamps; % rather,  pval < 1/nsamps.
                 %                 title(['P < ' num2str(pval)])
@@ -2067,10 +2073,10 @@ classdef TrialArray < handle
                 pval = 1-yi;
                 %                 title(['P = ' num2str(pval)])
             end
-
+            
         end
-
-
+        
+        
         function [stat, statResampled, pval] = ...
                 PermutationTest_SpikeCount(obj, trial_nums1, trial_nums2, nsamps, varargin)
             % function [stat, statResampled, pval] = ...
@@ -2086,13 +2092,13 @@ classdef TrialArray < handle
             %   form [startTimeInclusive stopTimeInclusive]. Default is full period
             %   of each trial.
             %
-
+            
             ntrials1 = length(trial_nums1);
             ntrials2 = length(trial_nums2);
             ntrialsTotal = ntrials1 + ntrials2;
-
+            
             individualTrialSpikeCounts = zeros(1,ntrialsTotal);
-
+            
             if nargin > 4
                 region = varargin{1};
                 if numel(region) ~= 2
@@ -2104,7 +2110,7 @@ classdef TrialArray < handle
                 startTimeInclusive = NaN; % set flag to indicate that we'll take spikes from full trial
                 stopTimeInclusive = NaN;  % set flag to indicate that we'll take spikes from full trial
             end
-
+            
             trialNums = obj.trialNums; % keep this out of any loops; it's slow.
             n=1;
             for k=[trial_nums1 trial_nums2]
@@ -2113,23 +2119,23 @@ classdef TrialArray < handle
                     error(['Trial number' num2str(k) 'is missing or is not unique.'])
                 end
                 st = obj.trials{ind}.spikesTrial.spikeTimes / obj.trials{ind}.spikesTrial.sampleRate;
-
+                
                 st = st(st>0); % Very important: get rid of 0 entries indicating no spikes.
-
+                
                 if ~isnan(startTimeInclusive)
                     st = st(st >= startTimeInclusive & st <= stopTimeInclusive);
                 end
-
+                
                 individualTrialSpikeCounts(n) = numel(st);
                 n=n+1;
             end
-
-
+            
+            
             countMean1 = mean(individualTrialSpikeCounts(1:ntrials1));
             countMean2 = mean(individualTrialSpikeCounts((ntrials1+1):end));
-
+            
             stat = abs(countMean1 - countMean2);  % Simple absolute value of difference in spike count.
-
+            
             % Do permutation test by shuffling labels for two groups of trials.
             statResampled = zeros(nsamps,1); n=1;
             for k=1:nsamps
@@ -2141,12 +2147,12 @@ classdef TrialArray < handle
                 statResampled(n) = abs(countMean1 - countMean2);  % Simple absolute value of difference in spike count.
                 n=n+1;
             end
-
+            
             y = 0.001:.001:1;
             x = quantile(statResampled, y);
             [x,I,junk] = unique(x); y = y(I); % throw out non-unique x values so can use interp1
-
-
+            
+            
             %   figure; plot(x,y); xlabel('Resampled distance index'); ylabel('Quantile')
             %             figure;
             %             hist(distanceIndexResampled); hold on
@@ -2154,7 +2160,7 @@ classdef TrialArray < handle
             %             set(gca, 'box','off')
             %             xlabel('Euclidean distance between histograms')
             %             ylabel(['Count out of ' num2str(nsamps) ' resamples'])
-
+            
             if stat > max(statResampled)
                 pval = 1/nsamps; % rather,  pval < 1/nsamps.
                 %                 title(['P < ' num2str(pval)])
@@ -2166,7 +2172,7 @@ classdef TrialArray < handle
                 pval = 1-yi;
                 %                 title(['P = ' num2str(pval)])
             end
-
+            
         end
         
         function [spikeCountDiff, spikeCountDiffShuffled, pval] = PermutationTest_SpikeCountDiff(obj, ...
@@ -2192,7 +2198,7 @@ classdef TrialArray < handle
             %   4. Compute pval as 1 minus fraction of shuffled values as or more extreme than
             %      true spikeCountDiff, making a two-tailed test.
             %
-            %                     
+            %
             r = obj.spikeCountInTimeWindow(time_window_in_sec(1), time_window_in_sec(2));
             
             ind1 = ismember(obj.trialNums, trial_nums1);
@@ -2230,24 +2236,24 @@ classdef TrialArray < handle
             x = quantile(spikeCountDiffShuffled, y);
             [x,I,junk] = unique(x); y = y(I); % throw out non-unique x values so can use interp1
             
-%             if spikeCountDiff > max(spikeCountDiffShuffled) || spikeCountDiff < min(spikeCountDiffShuffled)
-%                 pval = 1/nsamps; % rather,  pval < 1/nsamps.
-%             elseif sum(spikeCountDiffShuffled~=0)==0 && spikeCountDiff==0  % Spike count difference always exactly 0
-%                 pval = 1;
-%             else
-%                 yi = interp1(x,y,spikeCountDiff);
-%                 if isnan(yi)
-%                     yi = interp1(x,y,spikeCountDiff,'linear','extrap'); % spikeCountDiff can, rarely, exceed min/max of x.
-%                 end
-%                 % Two-tailed test:
-%                 if yi <= 0.5
-%                     pval = 2*yi;
-%                 elseif yi > 0.5
-%                     pval = 2*(1-yi);
-%                 else
-%                     error(['yi = ' int2str(yi)]) % Must be NaN
-%                 end
-%             end
+            %             if spikeCountDiff > max(spikeCountDiffShuffled) || spikeCountDiff < min(spikeCountDiffShuffled)
+            %                 pval = 1/nsamps; % rather,  pval < 1/nsamps.
+            %             elseif sum(spikeCountDiffShuffled~=0)==0 && spikeCountDiff==0  % Spike count difference always exactly 0
+            %                 pval = 1;
+            %             else
+            %                 yi = interp1(x,y,spikeCountDiff);
+            %                 if isnan(yi)
+            %                     yi = interp1(x,y,spikeCountDiff,'linear','extrap'); % spikeCountDiff can, rarely, exceed min/max of x.
+            %                 end
+            %                 % Two-tailed test:
+            %                 if yi <= 0.5
+            %                     pval = 2*yi;
+            %                 elseif yi > 0.5
+            %                     pval = 2*(1-yi);
+            %                 else
+            %                     error(['yi = ' int2str(yi)]) % Must be NaN
+            %                 end
+            %             end
             
             if spikeCountDiff > max(spikeCountDiffShuffled) || spikeCountDiff < min(spikeCountDiffShuffled)
                 pval = 1/nsamps; % rather,  pval < 1/nsamps.
@@ -2271,17 +2277,17 @@ classdef TrialArray < handle
                     error(['yi = ' num2str(yi) ,'yii=' num2str(yii)]) % Must be NaN
                 end
             end
-
             
             
-%             figure; subplot(121); plot(x,y); xlabel('Resampled difference in mean spike count'); ylabel('Quantile')
-%             subplot(122)
-%             hist(spikeCountDiffShuffled); hold on
-%             plot(spikeCountDiff, 1, 'r*')
-%             set(gca, 'box','off')
-%             xlabel('Spike count difference, <C_1> - <C_2>')
-%             ylabel(['Count out of ' num2str(nsamps) ' resamples'])
-%             title(['P = ' num2str(pval)])
+            
+            %             figure; subplot(121); plot(x,y); xlabel('Resampled difference in mean spike count'); ylabel('Quantile')
+            %             subplot(122)
+            %             hist(spikeCountDiffShuffled); hold on
+            %             plot(spikeCountDiff, 1, 'r*')
+            %             set(gca, 'box','off')
+            %             xlabel('Spike count difference, <C_1> - <C_2>')
+            %             ylabel(['Count out of ' num2str(nsamps) ' resamples'])
+            %             title(['P = ' num2str(pval)])
         end
         
         function [stat, statResampled, pval] = ...
@@ -2298,21 +2304,21 @@ classdef TrialArray < handle
             %   so the raw data that go into the histogram are really restricted to
             %   [startTimeInclusive - 1/2 * binwidth, startTimeInclusive + 1/2 * binwidth].
             %
-
+            
             nbins = length(histogram_bin_centers);
-
+            
             if length(histogram_bin_centers) < 2
                 error('Input histogram_bin_centers must be a vector of bin centers for histogramming.')
             end
-
+            
             ntrials1 = length(trial_nums1);
             ntrials2 = length(trial_nums2);
             ntrialsTotal = ntrials1 + ntrials2;
-
+            
             individualTrialHistograms = zeros(ntrialsTotal, nbins);
-
+            
             binWidthInSec = histogram_bin_centers(2)-histogram_bin_centers(1);  % All bins must be equal size for this transformation to Hz.
-           
+            
             trialNums = obj.trialNums; % keep this out of any loops; it's slow.
             n=1;
             for k=[trial_nums1 trial_nums2]
@@ -2321,12 +2327,12 @@ classdef TrialArray < handle
                     error(['Trial number' num2str(k) 'is missing or is not unique.'])
                 end
                 st = obj.trials{ind}.spikesTrial.spikeTimes / obj.trials{ind}.spikesTrial.sampleRate;
-
+                
                 h0 = hist(st((st>0)), histogram_bin_centers); % Before histogramming, remove 0 spike time entries that indicate that no spikes were found.
                 individualTrialHistograms(n,:) = h0 ./ binWidthInSec;
                 n=n+1;
             end
-
+            
             if nargin > 5
                 region = varargin{1};
                 if numel(region) ~= 2
@@ -2334,16 +2340,16 @@ classdef TrialArray < handle
                 end
                 startTimeInclusive = region(1);
                 stopTimeInclusive = region(2);
-
+                
                 ind = histogram_bin_centers >= startTimeInclusive & histogram_bin_centers <= stopTimeInclusive;
                 individualTrialHistograms = individualTrialHistograms(:,ind);
             end
-
+            
             histMean1 = mean(individualTrialHistograms(1:ntrials1,:),1);
             histMean2 = mean(individualTrialHistograms((ntrials1+1):end,:),1);
-
+            
             stat = sum(abs(histMean1 - histMean2));
-
+            
             % Do permutation test by shuffling labels for two groups of trials.
             statResampled = zeros(nsamps,1); n=1;
             for k=1:nsamps
@@ -2355,11 +2361,11 @@ classdef TrialArray < handle
                 statResampled(n) = sum(abs(histMean1 - histMean2));
                 n=n+1;
             end
-
+            
             y = 0.001:.001:1;
             x = quantile(statResampled, y);
             [x,I,junk] = unique(x); y = y(I); % throw out non-unique x values so can use interp1
-
+            
             if stat > max(statResampled)
                 pval = 1/nsamps; % rather,  pval < 1/nsamps.
             elseif length(x)==1 % No spikes
@@ -2370,10 +2376,10 @@ classdef TrialArray < handle
                 yi = interp1(x,y,stat);
                 pval = 1-yi;
             end
-
+            
         end
-
-
+        
+        
         function r = peakInstRate(obj)
             %
             % r = peakInstRate()
@@ -2385,65 +2391,65 @@ classdef TrialArray < handle
             %
             r = cellfun(@(x) x.peakInstRate, obj.trials);
         end
-
+        
         function r = maxPeakInstRate(obj)
             % Peak instaneous firing rate across ALL TRIALS in array.
             r = max(obj.peakInstRate);
         end
-
-
+        
+        
         %         function plot_spike_rasters_trial_types(obj)
         %            % NEED TO IMPLEMENT
         %         end
-
-
+        
+        
         function r = whiskerParamsBinwise(obj,trial_nums,tid,nbins,binSize)
             %
             % binSize is in sec
             %
             %         binSize=0.1; % sec
             %         nbins = 11;
-
+            
             ntrials = length(trial_nums);
-
-            spikeCount = cell(1,ntrials); velocity = cell(1,ntrials); 
-            acceleration = cell(1,ntrials); position = cell(1,ntrials); 
+            
+            spikeCount = cell(1,ntrials); velocity = cell(1,ntrials);
+            acceleration = cell(1,ntrials); position = cell(1,ntrials);
             curvatureChange = cell(1,ntrials); curvatureDot = cell(1,ntrials);
             meanTime = cell(1,ntrials);
             for n=1:ntrials
-
+                
                 k = find(obj.trialNums==trial_nums(n));
                 if isempty(k)
                     error('Trial num not found')
                 end
-
+                
                 sampleRate = obj.trials{k}.spikesTrial.sampleRate;
                 st = obj.trials{k}.spikesTrial.spikeTimes ./ sampleRate;
                 st = st(st>0); % 0 used to indicate no spikes.
-
+                
                 [y,t] = obj.trials{k}.whiskerTrial.get_velocity(tid,5);
                 [y2,t] = obj.trials{k}.whiskerTrial.get_acceleration(tid,5);
                 [y3,t] = obj.trials{k}.whiskerTrial.get_position(tid,5);
                 [c,t] = obj.trials{k}.whiskerTrial.get_curvatureDot(tid);
                 [c2,t] = obj.trials{k}.whiskerTrial.get_curvatureChange(tid);
-
+                
                 t = t + obj.whiskerTrialTimeOffset;
                 
                 %     cutOffInSec = 0.6; tind = y < cutOffInSec; y = y(tind);  c = c(tind); t = t(tind);
-
+                
                 if isempty(t) % in case there's a trial where the trajectory tid isn't present.
                     spikeCount{n} = NaN;
                     position{n} = NaN;
-                    velocity{n} = NaN;                    
-                    acceleration{n} = NaN;                    
+                    velocity{n} = NaN;
+                    acceleration{n} = NaN;
                     curvatureChange{n} = NaN;
                     curvatureDot{n} = NaN;
                     meanTime{n} = NaN;
                     continue
                 end
-
+                
                 st = st(st<=max(t));
-
+                
                 spikeCountBin = zeros(1,nbins);
                 positionBin = zeros(1,nbins);
                 velocityBin = zeros(1,nbins);
@@ -2460,7 +2466,7 @@ classdef TrialArray < handle
                     cbin = c(epochInd);
                     c2bin = c2(epochInd);
                     tbin = t(epochInd);
-
+                    
                     spikeCountBin(j) = length(st(st >= startTime & st < endTime));
                     positionBin(j) = mean(y3bin);
                     velocityBin(j) = mean(abs(ybin));
@@ -2468,7 +2474,7 @@ classdef TrialArray < handle
                     curvatureChangeBin(j) = mean(abs(c2bin));
                     curvatureDotBin(j) = mean(abs(cbin));
                     meanTimeBin(j) = mean(tbin); % mean time for bin
-
+                    
                     startTime = startTime + binSize;
                     endTime = endTime + binSize;
                 end
@@ -2480,7 +2486,7 @@ classdef TrialArray < handle
                 curvatureDot{n} = curvatureDotBin;
                 meanTime{n} = meanTimeBin;
             end
-
+            
             %             r = struct('spikeCount',spikeCount, 'whiskerPosVar', whiskerPosVar,'whiskerAvgCurv',whiskerAvgCurv);
             r.spikeCount = spikeCount;
             r.position = position;
@@ -2491,72 +2497,72 @@ classdef TrialArray < handle
             r.meanTime = meanTime;
         end
         
-  function r = spikeAndLickCountsBinned(obj,trial_nums,nbins,binSize)
+        function r = spikeAndLickCountsBinned(obj,trial_nums,nbins,binSize)
             %
             % binSize is in sec
             %
             %         binSize=0.1; % sec
             %         nbins = 11;
-
+            
             ntrials = length(trial_nums);
-
-            spikeCount = cell(1,ntrials); 
+            
+            spikeCount = cell(1,ntrials);
             lickCount = cell(1,ntrials);
             for n=1:ntrials
-
+                
                 k = find(obj.trialNums==trial_nums(n));
                 if isempty(k)
                     error('Trial num not found')
                 end
-
+                
                 sampleRate = obj.trials{k}.spikesTrial.sampleRate;
                 st = obj.trials{k}.spikesTrial.spikeTimes ./ sampleRate;
                 st = st(st>0); % 0 used to indicate no spikes.
                 
                 lt = obj.trials{k}.beamBreakTimes;
-
-
+                
+                
                 spikeCountBin = zeros(1,nbins);
                 lickCountBin = zeros(1,nbins);
                 
-
+                
                 startTime = 0; endTime = binSize;
                 for j=1:nbins
-
+                    
                     spikeCountBin(j) = length(st(st >= startTime & st < endTime));
                     lickCountBin(j) = length(lt(lt >= startTime & lt < endTime));
-
+                    
                     startTime = startTime + binSize;
                     endTime = endTime + binSize;
                 end
                 spikeCount{n} = spikeCountBin;
                 lickCount{n} = lickCountBin;
             end
-
+            
             r.spikeCount = spikeCount;
             r.lickCount = lickCount;
-
+            
         end
         
-%         function [r,time,se] = STA_whisker_bootstrap(obj,trial_nums,tid,width_in_sec,type_string,nboot)
-%             %
-%             %
-%             %
-%             %
-%             [r,time,junk] = obj.STA_whisker(trial_nums,tid,width_in_sec,type_string);
-%             
-%             rboot = zeros(nboot,length(r));
-%             
-%             ntrials = length(trial_nums);
-%             
-%             for k=1:nboot
-%                 rand_trials = randsample(trial_nums,ntrials,true);
-%                 [rit,junk,junk2] = obj.STA_whisker(rand_trials,tid,width_in_sec,type_string);
-%                 rboot(k,:) = rit;
-%             end
-%             se = std(rboot,0,1);
-%         end
-                
+        %         function [r,time,se] = STA_whisker_bootstrap(obj,trial_nums,tid,width_in_sec,type_string,nboot)
+        %             %
+        %             %
+        %             %
+        %             %
+        %             [r,time,junk] = obj.STA_whisker(trial_nums,tid,width_in_sec,type_string);
+        %
+        %             rboot = zeros(nboot,length(r));
+        %
+        %             ntrials = length(trial_nums);
+        %
+        %             for k=1:nboot
+        %                 rand_trials = randsample(trial_nums,ntrials,true);
+        %                 [rit,junk,junk2] = obj.STA_whisker(rand_trials,tid,width_in_sec,type_string);
+        %                 rboot(k,:) = rit;
+        %             end
+        %             se = std(rboot,0,1);
+        %         end
+        
         function [r,time,se] = STA_whisker(obj,trial_nums,tid,width_in_sec,type_string)
             %
             %
@@ -2565,7 +2571,7 @@ classdef TrialArray < handle
             % type_string is either 'velocity','curvature', or 'position'.
             %
             ntrials = length(trial_nums);
-
+            
             % Find out how many samples are required for a window of
             % width_in_sec duration. Assume that it's same for all
             % trials and use first trial to determine:
@@ -2579,28 +2585,28 @@ classdef TrialArray < handle
             ss = zeros(1,widthInSamples); % sum of squares, for computing STD
             
             trialNums = obj.trialNums;
-
-            nspikes = 0; 
+            
+            nspikes = 0;
             for n=1:ntrials
                 k = find(trialNums==trial_nums(n));
                 if isempty(k)
                     error('Trial num not found')
                 end
-
+                
                 sampleRate = obj.trials{k}.spikesTrial.sampleRate;
-%                 if sampleRate ~= sampleRateEphys
-%                     error('Sample rates for different ephys sweeps not same.') % May or may not be problem; check
-%                 end
+                %                 if sampleRate ~= sampleRateEphys
+                %                     error('Sample rates for different ephys sweeps not same.') % May or may not be problem; check
+                %                 end
                 st = obj.trials{k}.spikesTrial.spikeTimes ./ sampleRate;
                 st = st(st>0); % 0 used to indicate no spikes.
-                       
-%                 %--------------------------------------------------------
-%                 % Control: scramble spikes by setting to random times while
-%                 % keeping the same number of spikes. Should build in some refractory period for realism.
-% %                 st = randsample(tt, length(st), false);
-%                 st = randsample(0:samplePeriodEphys:5, length(st), false);
-%                 %--------------------------------------------------------
-%                     
+                
+                %                 %--------------------------------------------------------
+                %                 % Control: scramble spikes by setting to random times while
+                %                 % keeping the same number of spikes. Should build in some refractory period for realism.
+                % %                 st = randsample(tt, length(st), false);
+                %                 st = randsample(0:samplePeriodEphys:5, length(st), false);
+                %                 %--------------------------------------------------------
+                %
                 
                 switch type_string
                     case 'position'
@@ -2613,9 +2619,9 @@ classdef TrialArray < handle
                     otherwise
                         error('Invalid type_string argument')
                 end
-
+                
                 t = t + obj.whiskerTrialTimeOffset;
-                                
+                
                 % Limit to spikes for which we have stimulus timeseries
                 % for at least width_in_sec beforehand:
                 st = st(st<=max(t));
@@ -2625,28 +2631,28 @@ classdef TrialArray < handle
                     continue                 % within region of useful timeseries.
                 end
                 
-
                 
-
+                
+                
                 % Run interp1 once per trial, not per spike.
                 tt = min(t):samplePeriodEphys:max(t);
                 yy = interp1(t,y,tt); % Interpolate whisker timeseries to be at same sampling rate as spikes.
                 
                 for j=1:length(st)
                     spikeTime = st(j);
-%                     startTime = (spikeTime - width_in_sec) + samplePeriodEphys;
-%                     endTime = spikeTime;
-%                     ychunk = yy(tt>=startTime & tt<=endTime);
+                    %                     startTime = (spikeTime - width_in_sec) + samplePeriodEphys;
+                    %                     endTime = spikeTime;
+                    %                     ychunk = yy(tt>=startTime & tt<=endTime);
                     endSamp = find(tt<=spikeTime,1,'last');
-
+                    
                     if endSamp >= widthInSamples
                         ychunk = yy((endSamp-widthInSamples+1):endSamp);
-%                       tt = startTime:samplePeriodEphys:endTime;
-%                       yy = interp1(t,y,tt); % Interpolate whisker timeseries to be at same sampling rate as spikes.
-%                       s = s + yy;
+                        %                       tt = startTime:samplePeriodEphys:endTime;
+                        %                       yy = interp1(t,y,tt); % Interpolate whisker timeseries to be at same sampling rate as spikes.
+                        %                       s = s + yy;
                         s = s + ychunk;
                         ss = ss + ychunk.^2;
-                        nspikes = nspikes + 1; 
+                        nspikes = nspikes + 1;
                     end
                 end
             end
@@ -2659,15 +2665,15 @@ classdef TrialArray < handle
                 r = s ./ nspikes;
                 sampleVariance = (ss - (s.^2)./nspikes)./(nspikes-1);
                 se = sqrt(sampleVariance)./sqrt(nspikes);
-%                 se = -1;
+                %                 se = -1;
             end
         end
-
+        
         function [r,se] = LTA(obj,trial_nums,bin_centers,varargin)
             %
             %  Lick-triggered average spike histograms.
-            %    
-            %  bin_centers define histogram with respect to time of lick, in seconds. 
+            %
+            %  bin_centers define histogram with respect to time of lick, in seconds.
             %
             %  varargin{1}: 2-element vector of form [startTime endTime] in seconds
             %      to restrict analysis to, inclusive.
@@ -2675,41 +2681,41 @@ classdef TrialArray < handle
             %
             
             if nargin>3
-               restrictRegion = varargin{1};
+                restrictRegion = varargin{1};
             else
                 restrictRegion = [];
             end
             
             nbins = length(bin_centers);
-            binWidth = bin_centers(2) - bin_centers(1); % assume bins are evenly spaced!  
+            binWidth = bin_centers(2) - bin_centers(1); % assume bins are evenly spaced!
             
             if length(bin_centers) < 2
                 error('Input bin_centers must be a vector of bin centers for histogramming.')
             end
             
             ntrials = length(trial_nums);
-
+            
             s = zeros(1,nbins); % sum
             ss = zeros(1,nbins); % sum of squares, for computing STD
             trialNums = obj.trialNums;
             allLicks = obj.beamBreakTimes;
             
-            nlicks = 0; 
+            nlicks = 0;
             for n=1:ntrials
                 k = find(trialNums==trial_nums(n));
                 if isempty(k)
                     error('Trial num not found')
                 end
-
-               licks = allLicks{k};
                 
-               sweepLengthInSec = obj.trials{k}.spikesTrial.sweepLengthInSamples / obj.trials{k}.spikesTrial.sampleRate;
-               
-                               
+                licks = allLicks{k};
+                
+                sweepLengthInSec = obj.trials{k}.spikesTrial.sweepLengthInSamples / obj.trials{k}.spikesTrial.sampleRate;
+                
+                
                 sampleRate = obj.trials{k}.spikesTrial.sampleRate;
                 st = obj.trials{k}.spikesTrial.spikeTimes ./ sampleRate;
                 st = st(st>0); % 0 used to indicate no spikes.
-                       
+                
                 if ~isempty(restrictRegion)
                     st = st(st>=restrictRegion(1) & st<=restrictRegion(2));
                 end
@@ -2719,10 +2725,10 @@ classdef TrialArray < handle
                 % before and after for all bin_centers.
                 licks = licks(licks >= (-min(bin_centers)) & licks<=(sweepLengthInSec - max(bin_centers)));
                 
-                if isempty(licks) 
-                    continue      
+                if isempty(licks)
+                    continue
                 end
-
+                
                 for j=1:length(licks)
                     lickTime = licks(j);
                     x = st - lickTime; % center spike times on time of lick
@@ -2734,10 +2740,10 @@ classdef TrialArray < handle
                     h = hist(x, bin_centers);
                     s = s + h;
                     ss = ss + h.^2;
-                    nlicks = nlicks + 1; 
-                 end
-            end        
-
+                    nlicks = nlicks + 1;
+                end
+            end
+            
             if nlicks==0
                 disp('Warning: No licks found among all the trials')
                 r = NaN; se = NaN;
@@ -2791,7 +2797,7 @@ classdef TrialArray < handle
             else
                 g = get(gcf,'UserData');
             end
-
+            
             
             for j = 1:length(varargin);
                 argString = varargin{j};
@@ -2828,24 +2834,24 @@ classdef TrialArray < handle
                     case 'tid0'
                         if isempty(g.tid) || g.tid ~= 0
                             g.tid = 0;
-                            [g.whiskingEpochs,g.nonWhiskingEpochs] = obj.detectWhiskingEpochs(g.tid, obj.whiskerTrialNums); 
+                            [g.whiskingEpochs,g.nonWhiskingEpochs] = obj.detectWhiskingEpochs(g.tid, obj.whiskerTrialNums);
                             g.firstContactTimes = obj.detectFirstContacts(g.tid, obj.whiskerTrialNums);
                         end
                     case 'tid1'
                         if isempty(g.tid) || g.tid ~= 1
                             g.tid = 1;
-                            [g.whiskingEpochs,g.nonWhiskingEpochs] = obj.detectWhiskingEpochs(g.tid, obj.whiskerTrialNums); 
+                            [g.whiskingEpochs,g.nonWhiskingEpochs] = obj.detectWhiskingEpochs(g.tid, obj.whiskerTrialNums);
                             g.firstContactTimes = obj.detectFirstContacts(g.tid, obj.whiskerTrialNums);
                         end
                     case 'tid2'
                         if isempty(g.tid) || g.tid ~= 2
                             g.tid = 2;
-                            [g.whiskingEpochs,g.nonWhiskingEpochs] = obj.detectWhiskingEpochs(g.tid, obj.whiskerTrialNums); 
+                            [g.whiskingEpochs,g.nonWhiskingEpochs] = obj.detectWhiskingEpochs(g.tid, obj.whiskerTrialNums);
                             g.firstContactTimes = obj.detectFirstContacts(g.tid, obj.whiskerTrialNums);
                         end
                 end
             end
-                
+            
             msSpikes=5;
             switch g.displayType
                 case 'behav'
@@ -2881,29 +2887,29 @@ classdef TrialArray < handle
                     y = ones(size(x));
                     plot(x,y,'ko','MarkerSize',msSpikes); ylim([.8 1.2])
                     
-                    subplot(4,1,3); cla; hold on; 
+                    subplot(4,1,3); cla; hold on;
                     title('Position')
-                    subplot(4,1,4); cla; hold on; 
+                    subplot(4,1,4); cla; hold on;
                     title('Curvature')
-%                     title('CurvatureDot') 
-%                     title('CurvatureDot / STD_{CurvatureDot on this trial}') 
+                    %                     title('CurvatureDot')
+                    %                     title('CurvatureDot / STD_{CurvatureDot on this trial}')
                     if ~isempty(obj.trials{g.sweepNum}.whiskerTrial)
                         plotSymString = {'k-','m-','c-','g-','y-','r-','b-'};
                         tid = obj.trials{g.sweepNum}.whiskerTrial.trajectoryIDs;
                         numTid = length(tid);
-                        yRangePos = zeros(numTid,2); % for setting display limits below 
-                        yRangeCurv = zeros(numTid,2); % for setting display limits below 
+                        yRangePos = zeros(numTid,2); % for setting display limits below
+                        yRangeCurv = zeros(numTid,2); % for setting display limits below
                         xRangeCurv = zeros(numTid,2); % for setting display limits below
                         for j=1:numTid
                             s = plotSymString{mod(j,length(plotSymString))};
                             subplot(4,1,3)
                             [y,x] = obj.trials{g.sweepNum}.whiskerTrial.get_position(tid(j));
                             plot(x,y,s);
-                            yRangePos(j,:) = [min(y) max(y)]; 
+                            yRangePos(j,:) = [min(y) max(y)];
                             subplot(4,1,4)
                             [y,x] = obj.trials{g.sweepNum}.whiskerTrial.get_curvature(tid(j));
-%                             [y,x] = obj.trials{g.sweepNum}.whiskerTrial.get_curvatureDot(tid(j));
-%                             [y,x] = obj.trials{g.sweepNum}.whiskerTrial.get_curvatureDot(tid(j)); y = y ./std(y);
+                            %                             [y,x] = obj.trials{g.sweepNum}.whiskerTrial.get_curvatureDot(tid(j));
+                            %                             [y,x] = obj.trials{g.sweepNum}.whiskerTrial.get_curvatureDot(tid(j)); y = y ./std(y);
                             plot(x,y,s);
                             xRangeCurv(j,:) = [min(x) max(x)];
                             yRangeCurv(j,:) = [min(y) max(y)];
@@ -2946,16 +2952,16 @@ classdef TrialArray < handle
                         % Shade all post-first contact times in curvature plot:
                         subplot(4,1,4);
                         ymin = min(yRangeCurv(:,1)); ymax = max(yRangeCurv(:,2));
-                        xmax = max(xRangeCurv(:,2));                        
+                        xmax = max(xRangeCurv(:,2));
                         x = g.firstContactTimes{ind};
                         if ~isempty(x)
                             p = patch([x x xmax xmax], [ymin ymax ymax ymin],[1 1 0],'FaceAlpha',0.2,'EdgeColor','none');
                             uistack(p,'bottom')
                         end
                     end
-
+                    
             end
-                
+            
             if ~isempty(obj.trials{g.sweepNum}.whiskerTrial)
                 trackerFileName = obj.trials{g.sweepNum}.whiskerTrial.trackerFileName((end-2):end);
             else
@@ -2969,23 +2975,23 @@ classdef TrialArray < handle
                 '\newline displayType=' g.displayType '/' g.displayTypeMinor,', tid=' int2str(g.tid)],'FontSize',10)
             
             % Uncomment following for-loop to put all axes on [0 s,5 s]:
-%             for k=1:numAxes
-%                 subplot(numAxes,1,k)
-%                 xlim([0 5])
-%             end
+            %             for k=1:numAxes
+            %                 subplot(numAxes,1,k)
+            %                 xlim([0 5])
+            %             end
             
             set(gcf,'UserData',g);
             
-
+            
         end
         
-
+        
     end % Methods
-
-
-
+    
+    
+    
     methods % Dependent property methods; cannot have attributes.
-
+        
         function value = get.cellNum(obj)
             if ~isempty(obj.trials)
                 value = obj.trials{1}.cellNum;
@@ -2993,7 +2999,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.cellCode(obj)
             if ~isempty(obj.trials)
                 value = obj.trials{1}.cellCode;
@@ -3001,7 +3007,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.mouseName(obj)
             if ~isempty(obj.trials)
                 value = obj.trials{1}.mouseName;
@@ -3009,7 +3015,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.sessionName(obj)
             if ~isempty(obj.trials)
                 value = obj.trials{1}.sessionName;
@@ -3017,7 +3023,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.trialNums(obj)
             if ~isempty(obj.trials)
                 value = cellfun(@(x) x.trialNum, obj.trials);
@@ -3025,7 +3031,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.trialTypes(obj)
             if ~isempty(obj.trials)
                 value = cellfun(@(x) x.trialType, obj.trials);
@@ -3033,7 +3039,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.trialCorrects(obj)
             if ~isempty(obj.trials)
                 value = cellfun(@(x) x.trialCorrect, obj.trials);
@@ -3041,7 +3047,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.fractionCorrect(obj)
             if ~isempty(obj.trials)
                 value = mean(obj.trialCorrects);
@@ -3049,7 +3055,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.hitTrialNums(obj)
             if ~isempty(obj.trials)
                 ind = cellfun(@(x) x.trialType==1 && x.trialCorrect==1, obj.trials);
@@ -3058,7 +3064,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.hitTrialInds(obj)
             if ~isempty(obj.trials)
                 value = cellfun(@(x) x.trialType==1 && x.trialCorrect==1, obj.trials);
@@ -3066,7 +3072,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.missTrialNums(obj)
             if ~isempty(obj.trials)
                 ind = cellfun(@(x) x.trialType==1 && x.trialCorrect==0, obj.trials);
@@ -3075,7 +3081,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.missTrialInds(obj)
             if ~isempty(obj.trials)
                 value = cellfun(@(x) x.trialType==1 && x.trialCorrect==0, obj.trials);
@@ -3083,7 +3089,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.falseAlarmTrialNums(obj)
             if ~isempty(obj.trials)
                 ind = cellfun(@(x) x.trialType==0 && x.trialCorrect==0, obj.trials);
@@ -3092,7 +3098,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.falseAlarmTrialInds(obj)
             if ~isempty(obj.trials)
                 value = cellfun(@(x) x.trialType==0 && x.trialCorrect==0, obj.trials);
@@ -3100,7 +3106,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.correctRejectionTrialNums(obj)
             if ~isempty(obj.trials)
                 ind = cellfun(@(x) x.trialType==0 && x.trialCorrect==1, obj.trials);
@@ -3109,7 +3115,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.correctRejectionTrialInds(obj)
             if ~isempty(obj.trials)
                 value = cellfun(@(x) x.trialType==0 && x.trialCorrect==1, obj.trials);
@@ -3117,7 +3123,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.whiskerTrialInds(obj)
             if ~isempty(obj.trials)
                 value = cellfun(@(x) ~isempty(x.whiskerTrial), obj.trials);
@@ -3125,7 +3131,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.whiskerTrialNums(obj)
             if ~isempty(obj.trials)
                 ind = cellfun(@(x) ~isempty(x.whiskerTrial), obj.trials);
@@ -3134,7 +3140,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.spikeRatesInHz(obj)
             if ~isempty(obj.trials)
                 value = cellfun(@(x) x.spikeRateInHz, obj.trials);
@@ -3142,7 +3148,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.meanSpikeRateInHz(obj)
             if ~isempty(obj.trials)
                 value = mean(obj.spikeRatesInHz);
@@ -3150,7 +3156,7 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
+        
         function value = get.stdDevSpikeRateInHz(obj)
             if ~isempty(obj.trials)
                 value = std(obj.spikeRatesInHz,1);
@@ -3158,9 +3164,13 @@ classdef TrialArray < handle
                 value = [];
             end
         end
-
-
+        
+        
     end
-
+    
+    
+    
+    
+    
 end
 
