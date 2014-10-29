@@ -82,14 +82,9 @@ classdef BehavTrialArray < handle
                     elseif isfield(x.saved, 'pole_disc_jyinactivationobj_response_history')
                                             trial_correct = x.saved.pole_disc_jyinactivationobj_response_history(k);
 
-                    elseif isfield(x.saved, 'poles_discobj_hit_history')
+                                        elseif isfield(x.saved, 'poles_discobj_hit_history')
 
                     trial_correct = x.saved.poles_discobj_hit_history(k);
-
-                    elseif isfield(x.saved, 'pole_detect_spobj_hit_history')
-
-                    trial_correct = x.saved.pole_detect_spobj_hit_history(k);
-                    
                     end
                     
                     trial_events = x.saved_history.RewardsSection_LastTrialEvents{k};
