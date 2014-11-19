@@ -70,6 +70,7 @@ M0I(whiskerTIN)                     = cellfun(@(x)x.whiskerTrial.M0I{1},        
 Faxial(whiskerTIN)                  = cellfun(@(x)x.whiskerTrial.Faxial{1},                 array.trials(whiskerTIN),'UniformOutput',0); 
 trialClass(whiskerTIN)              = cellfun(@(x)x.trialType*2 + x.trialCorrect + 1,       array.trials(whiskerTIN),'UniformOutput',0);
 answerLickTime                      = cellfun(@(x)x.behavTrial.answerLickTime,              array.trials            ,'UniformOutput',0);
+sr                                  = round(1/array.trials{find(array.whiskerTrialInds,1,'first')}.whiskerTrial.framePeriodInSec);
 
 meanContactCurve = zeros(max(whiskerTIN),1);
 trialContactType = zeros(max(whiskerTIN),1);
@@ -121,7 +122,7 @@ if nargin <= 3;
 
     for k=whiskerTIN;
         if isempty(contacts{k}.contactInds{1})==0;
-            contacts{k}.contactInds{1} = contacts{k}.contactInds{1}(contacts{k}.contactInds{1}>array.trials{k}.pinDescentOnsetTime*1000);
+            contacts{k}.contactInds{1} = contacts{k}.contactInds{1}(contacts{k}.contactInds{1}>array.trials{k}.pinDescentOnsetTime*sr);
 
             contacts{k}.segmentInds{1}(:,1)=contacts{k}.contactInds{1}([1 find(diff(contacts{k}.contactInds{1})>4)+1]);   % don't switch back to intertial if the tracking disappears for 1-3 frames
             contacts{k}.segmentInds{1}(:,2)=contacts{k}.contactInds{1}([find(diff(contacts{k}.contactInds{1})>4) end]);
