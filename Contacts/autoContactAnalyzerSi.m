@@ -80,10 +80,10 @@ trialContactType = zeros(max(whiskerTIN),1);
 if nargin == 3
 
         addFieldIdx = find(cellfun(@(x)isfield(x,'manualAdd'),contacts));
-        delFieldIdx = find(cellfun(@(x)isfield(x,'manualAdd'),contacts));
+        delFieldIdx = find(cellfun(@(x)isfield(x,'manualDel'),contacts));
 
         addContactInds(addFieldIdx) = cellfun(@(x)x.manualAdd{1},contacts(addFieldIdx),'UniformOutput',0);
-        delContactInds(delFieldIdx) = cellfun(@(x)x.manualAdd{1},contacts(delFieldIdx),'UniformOutput',0);
+        delContactInds(delFieldIdx) = cellfun(@(x)x.manualDel{1},contacts(delFieldIdx),'UniformOutput',0);
 
         contacts = buildNewContactArray(array,params);
 
@@ -94,7 +94,7 @@ if nargin == 3
 
     for i = delFieldIdx
         contacts{i}.manualDel{1} = delContactInds{i};
-        contacts{i}.contactInds{1} = unique(cat(2,contacts{i}.manualDel{1}(:)',contacts{i}.contactInds{1}(:)'));
+        contacts{i}.contactInds{1} = setdiff(contacts{i}.contactInds{1}(:),contacts{i}.manualDel{1}(:))';
 
     end
 
