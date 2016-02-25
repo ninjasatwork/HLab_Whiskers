@@ -1,0 +1,12 @@
+function [T, contacts, params] = loadSUData(cellNum, SU);
+ dirName = uigetdir('', 'Select base directory')
+ SU_ConDir = (dirName filesep [\ConTA\''C:\Users\shires\Dropbox\NoiseProject\S1_singleunit\ConTA\');
+ SU_TDir =   ('C:\Users\shires\Dropbox\NoiseProject\S1_singleunit\TrialArrays\');
+display(['Loading '  SU.trialArrayName{cellNum}])
+% load([SU_CADir SU.trialArrayName{cellNum}(13:end)]);
+% load([SU_DADir 'DA_' num2str(cellNum) '_' SU.trialArrayName{cellNum}(13:end)]);
+load([SU_TDir SU.trialArrayName{cellNum}]);
+load([SU_ConDir SU.contactsArrayName{cellNum}]);
+
+
+

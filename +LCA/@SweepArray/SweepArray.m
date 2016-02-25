@@ -1,0 +1,540 @@
+%
+% Concatenate sweeps, eg, all sweeps for a recording site.
+%
+% DHO, 4/08.
+
+classdef SweepArray < handle
+
+    properties
+        cellNum = '';
+        cellCode = '';
+        sweeps = {};
+        xsgSweepNums = [];
+    end
+
+    properties (Dependent = true)
+        trialNums
+    end
+
+    methods (Access = public)
+        function obj = SweepArray(cell_num, cell_code, xsg_sweep_nums)
+            if nargin > 0
+                obj.cellNum = cell_num;
+                obj.cellCode = cell_code;
+                obj.xsgSweepNums = xsg_sweep_nums;
+
+                n=1;
+                for k=1:length(obj.xsgSweepNums)
+                    obj.sweeps{n} = LCA.Sweep(obj.cellNum, obj.cellCode, obj.xsgSweepNums(n));
+                    n=n+1;
+                end
+
+            end
+        end
+
+        
+        function viewer(obj,varargin)
+            %
+            % USAGE:    viewer
+            %                    
+            %   This function must be called with no arguments. Signal selection
+            %       and subsequent options are then chosen through the GUI.
+            %
+            %   Input arguments (in varargin) are reserved for internal, recursive
+            %       use of this function.
+            %
+            %
+            %
+            if nargin==1 % Called with no arguments
+                objname = inputname(1); % Command-line name of this instance of a SweepArray.
+                h=figure('Color','white'); ht = uitoolbar(h);
+                a = .20:.05:0.95; b(:,:,1) = repmat(a,16,1)'; b(:,:,2) = repmat(a,16,1); b(:,:,3) = repmat(flipdim(a,2),16,1);
+                bbutton = uipushtool(ht,'CData',b,'TooltipString','Back');
+                fbutton = uipushtool(ht,'CData',b,'TooltipString','Forward','Separator','on');
+                set(fbutton,'ClickedCallback',[objname '.viewer(''next'')'])
+                set(bbutton,'ClickedCallback',[objname '.viewer(''last'')'])
+                
+                m=uimenu(h,'Label','Display Type','Separator','on');
+                uimenu(m,'Label','Raw voltage','Callback',[objname '.viewer(''rawSignal'',''none'')'])
+                uimenu(m,'Label','High-pass filtered','Callback',[objname '.viewer(''highPassFilteredSignal'',''none'')'])
+                uimenu(m,'Label','LFP','Callback',[objname '.viewer(''LFP'',''none'')']);
+                uimenu(m,'Label','High-pass filtered + spike times','Callback',[objname '.viewer(''highPassFilteredSignal'',''spikeTimes'')'])
+                uimenu(m,'Label','Raw voltage + spike times','Callback',[objname '.viewer(''rawSignal'',''spikeTimes'')'])
+                uimenu(m,'Label','LFP + spike times','Callback',[objname '.viewer(''LFP'',''spikeTimes'')'])
+                uimenu(m,'Label','High-pass filtered + spike times + threshold','Callback',[objname '.viewer(''highPassFilteredSignal'',''spikeTimesPlusThreshold'')'])
+                
+                uimenu(m,'Label','Bitcode channel','Callback',[objname '.viewer(''bitCode'',''none'')'])
+                
+                uimenu(h,'Label','Jump to sweep','Separator','on','Callback',[objname '.viewer(''jumpToSweep'')']);
+                        
+                g = struct('sweepNum',1,'trialList','','displayType','rawSignal','displayTypeMinor','none');
+                set(h,'UserData',g);
+                y=obj.sweeps{g.sweepNum}.rawSignal; x=(1:length(y))/obj.sweeps{g.sweepNum}.sampleRate;
+                plot(x,y,'k-'); hold on
+            else
+                g = get(gcf,'UserData');
+                if isempty(g) % Initial call to this method has argument
+                    g = struct('sweepNum',1,'trialList','','displayType','rawSignal');
+                end
+                for j = 1:length(varargin);
+                    argString = varargin{j};
+                    switch argString
+                        case 'next'
+                            if g.sweepNum < length(obj)
+                                g.sweepNum = g.sweepNum + 1;
+                            end
+                        case 'last'
+                            if g.sweepNum > 1
+                                g.sweepNum = g.sweepNum - 1;
+                            end
+                        case 'jumpToSweep'
+                            if isempty(g.trialList)
+                                nsweeps = obj.length;
+                                g.trialList = cell(1,nsweeps);
+                                for k=1:nsweeps
+                                    g.trialList{k} = [int2str(k) ': trialNum=' int2str(obj.trialNums(k))];
+                                end
+                            end
+                            [selection,ok]=listdlg('PromptString','Select a sweep:','ListString',...
+                                g.trialList,'SelectionMode','single');
+                            if ~isempty(selection) && ok==1
+                                g.sweepNum = selection;
+                            end
+                        case 'rawSignal'
+                            g.displayType = 'rawSignal';
+                        case 'highPassFilteredSignal'
+                            g.displayType = 'highPassFilteredSignal';
+                        case 'LFP'
+                            g.displayType = 'LFP';
+                        case 'bitCode'
+                            g.displayType = 'bitCode';
+                        case 'none'
+                            g.displayTypeMinor = 'none';
+                        case 'spikeTimes'
+                            g.displayTypeMinor = 'spikeTimes';
+                        case 'spikeTimesPlusThreshold'
+                            g.displayTypeMinor = 'spikeTimesPlusThreshold';
+                        otherwise
+                            error('Invalid string argument.')
+                    end
+                end
+                
+                cla; ms=8; lw=0.5;
+                switch g.displayType
+                    case 'rawSignal'
+                        y=obj.sweeps{g.sweepNum}.rawSignal;
+                        x=(1:length(y))/obj.sweeps{g.sweepNum}.sampleRate;
+                        plot(x,y,'k-')
+                        xlabel('Sec');  ylabel('mV')
+                    case 'highPassFilteredSignal'
+                        y=obj.sweeps{g.sweepNum}.highPassFilteredSignal;
+                        x=(1:length(y))/obj.sweeps{g.sweepNum}.sampleRate;
+                        plot(x,y,'k-')
+                        xlabel('Sec');  ylabel('mV')
+                    case 'LFP'
+                        y=obj.sweeps{g.sweepNum}.LFP;
+                        x=(1:length(y))/obj.sweeps{g.sweepNum}.sampleRate;
+                        plot(x,y,'k-')
+                        xlabel('Sec');  ylabel('mV')
+                    case 'bitCode'
+                        y=obj.sweeps{g.sweepNum}.bitCode;
+                        x=(1:length(y))/obj.sweeps{g.sweepNum}.sampleRate;
+                        plot(x,y,'k-')
+                        xlabel('Sec');  ylabel('V')
+                end
+                
+                switch g.displayTypeMinor
+                    case 'none'
+                        % do nothing
+                    case 'spikeTimes'
+                        hold on
+                        spikeTimeInds = obj.sweeps{g.sweepNum}.spikeTimes;
+                        spikeTimeInds = spikeTimeInds(spikeTimeInds>0); % no spikes give result of spikeTimes=0; get rid of that 0.
+                        if ~isempty(spikeTimeInds)
+                            plot(x(spikeTimeInds),y(spikeTimeInds),'ro','MarkerSize',ms)
+                        end
+                    case 'spikeTimesPlusThreshold'
+                        hold on
+                        spikeTimeInds = obj.sweeps{g.sweepNum}.spikeTimes;
+                        spikeTimeInds = spikeTimeInds(spikeTimeInds>0); % no spikes give result of spikeTimes=0; get rid of that 0.
+                        if ~isempty(spikeTimeInds)
+                            plot(x(spikeTimeInds),y(spikeTimeInds),'ro','MarkerSize',ms)
+                        end
+                        xmin = min(x); xmax = max(x); 
+                        thresh = obj.sweeps{g.sweepNum}.spikeThreshold;
+                        line([xmin xmax],[thresh thresh],'LineStyle','-','LineWidth',lw,'Color','g')
+                end
+
+
+            end
+            title([obj.cellNum obj.cellCode ', ' int2str(g.sweepNum) '/' int2str(obj.length) ...
+                ', trialNum=' int2str(obj.trialNums(g.sweepNum)) ... 
+                ', xsgFileNum=' int2str(obj.sweeps{g.sweepNum}.xsgFileNum) '\newline displayType=' g.displayType])
+            
+            set(gcf,'UserData',g);
+        end
+        
+
+        
+        function r = length(obj)
+            r = length(obj.sweeps);
+        end
+
+        function r = size(obj)
+            if isempty(length(obj.sweeps))
+                r = [];
+            else
+                r = [length(obj.sweeps), 1];
+            end
+        end
+
+        %         function r = subsref(obj, s) % Have to implement multi-level
+        % %         subscripting for this to be useful.
+        %             if length(s) > 1
+        %                 error('SweepArray does not implement multilevel subsref() use yet')
+        %             end
+        %             switch s.type
+        %                 case '.'
+        %                     field = s.subs;
+        %                     if ~ismember(field,properties(obj))
+        %                         error('Invalid property name')
+        %                     else
+        %                         eval(['r = obj.' field ';'])
+        %                     end
+        %
+        %                 case {'()','{}'}
+        %                     if length(s.subs) > 1
+        %                         error('Only one dimension can be subscripted for a SweepArray')
+        %                     else
+        %                         ind = s.subs{1};
+        %                         if isempty(ind)
+        %                             r = obj;
+        %                         elseif max(ind) > length(obj.sweeps) || min(ind) < 1
+        %                             error('Subscripts out of bounds')
+        %                         else
+        %                             r = obj;
+        %                             r.S = r.S(ind);
+        %                             r.xsgSweepNums = r.xsgSweepNums(ind);
+        %                         end
+        %                     end
+        %             end
+        %         end
+
+
+        function r = get_spike_times(obj,varargin)
+            %
+            %  r = get_spike_times(obj,varargin)
+            %
+            %  Returns LCA.SpikesTrialArray object.
+            %
+            %
+            if nargin > 1
+                ind = varargin{1};
+                if max(ind) > length(obj) || min(ind) < 1
+                    error('Index out of bounds')
+                end
+            else
+                ind = 1:length(obj);
+            end
+            spikes_trials = cell(1,length(ind));
+            for k=ind
+                theSweep = obj.sweeps{k};
+                spikes_trials{k} = LCA.SpikesTrial(theSweep.trialNum,theSweep.cellNum,...
+                    theSweep.cellCode,theSweep.xsgFileNum,theSweep.sampleRate,...
+                    theSweep.sweepLengthInSamples,...
+                    theSweep.spikeTimes);
+%                 
+%                 SpikesTrial(trial_num, cell_num, cell_code, xsg_file_num,...
+%                 sample_rate, sweep_length_in_samples, spike_times)
+            
+            
+            end
+            cell_num = spikes_trials{2}.cellNum;
+            cell_code = spikes_trials{2}.cellCode;
+            r = LCA.SpikesTrialArray(spikes_trials, cell_num, cell_code);
+        end
+
+        %                 function r = get_spike_times(obj,varargin)
+        %             %
+        %             %  r = get_spike_times(obj,varargin)
+        %             %
+        %             %
+        %             if nargin > 1
+        %                 ind = varargin{1};
+        %                 if max(ind) > length(obj) || min(ind) < 1
+        %                     error('Index out of bounds')
+        %                 end
+        %             else
+        %                 ind = 1:length(obj);
+        %             end
+        %             r = cell(1,length(ind));
+        %             for k=ind
+        %                 theSweep = obj.sweeps{k};
+        %                 r{k}.trialNum = theSweep.trialNum;
+        %                 r{k}.cellNum = theSweep.cellNum;
+        %                 r{k}.cellCode = theSweep.cellCode;
+        %                 r{k}.xsgFileNum = theSweep.xsgFileNum;
+        %                 r{k}.useFlag = theSweep.useFlag;
+        %                 r{k}.sampleRate = theSweep.sampleRate;
+        %                 r{k}.spikeTimes = theSweep.spikeTimes;
+        %             end
+        %         end
+
+        function r = get_spike_times_secondary(obj,varargin) % SHOULD UPDATE TO RETURN CELL ARRAY OF @SpikesTrial OBJECTS.
+            if nargin > 1
+                ind = varargin{1};
+                if max(ind) > length(obj) || min(ind) < 1
+                    error('Index out of bounds')
+                end
+            else
+                ind = 1:length(obj);
+            end
+            r = cell(1,length(ind));
+            for k=ind
+                theSweep = obj.sweeps{k};
+                r{k}.trialNum = theSweep.trialNum;
+                r{k}.cellNum = theSweep.cellNum;
+                r{k}.cellCode = theSweep.cellCode;
+                r{k}.xsgFileNum = theSweep.xsgFileNum;
+                r{k}.useFlag = theSweep.useFlag;
+                r{k}.sampleRate = theSweep.sampleRate;
+                r{k}.spikeTimesSecondary = theSweep.spikeTimesSecondary;
+            end
+        end
+
+        function r = get_spike_times_all(obj,varargin)
+            if nargin > 1
+                ind = varargin{1};
+                if max(ind) > length(obj) || min(ind) < 1
+                    error('Index out of bounds')
+                end
+            else
+                ind = 1:length(obj);
+            end
+            r = cell(1,length(ind));
+            for k=ind
+                theSweep = obj.sweeps{k};
+                r{k}.trialNum = theSweep.trialNum;
+                r{k}.cellNum = theSweep.cellNum;
+                r{k}.cellCode = theSweep.cellCode;
+                r{k}.xsgFileNum = theSweep.xsgFileNum;
+                r{k}.useFlag = theSweep.useFlag;
+                r{k}.sampleRate = theSweep.sampleRate;
+                r{k}.spikeTimes = theSweep.spikeTimes;
+                r{k}.spikeTimesSecondary = theSweep.spikeTimesSecondary;
+            end
+        end
+
+        function r = get_spike_waveforms(obj,varargin)
+            if nargin > 1
+                ind = varargin{1};
+                if max(ind) > length(obj) || min(ind) < 1
+                    error('Index out of bounds')
+                end
+            else
+                ind = 1:length(obj);
+            end
+            r = cell(1,length(ind));
+            for k=ind
+                theSweep = obj.sweeps{k};
+                r{k}.trialNum = theSweep.trialNum;
+                r{k}.cellNum = theSweep.cellNum;
+                r{k}.cellCode = theSweep.cellCode;
+                r{k}.xsgFileNum = theSweep.xsgFileNum;
+                r{k}.useFlag = theSweep.useFlag;
+                r{k}.sampleRate = theSweep.sampleRate;
+                r{k}.spikeWaveforms = theSweep.spikeWaveforms;
+            end
+        end
+
+        function r = get_spike_waveforms_secondary(obj,varargin)
+            if nargin > 1
+                ind = varargin{1};
+                if max(ind) > length(obj) || min(ind) < 1
+                    error('Index out of bounds')
+                end
+            else
+                ind = 1:length(obj);
+            end
+            r = cell(1,length(ind));
+            for k=ind
+                theSweep = obj.sweeps{k};
+                r{k}.trialNum = theSweep.trialNum;
+                r{k}.cellNum = theSweep.cellNum;
+                r{k}.cellCode = theSweep.cellCode;
+                r{k}.xsgFileNum = theSweep.xsgFileNum;
+                r{k}.useFlag = theSweep.useFlag;
+                r{k}.sampleRate = theSweep.sampleRate;
+                r{k}.spikeWaveformsSecondary = theSweep.spikeWaveformsSecondary;
+            end
+        end
+
+        function r = get_spike_waveforms_all(obj,varargin)
+            if nargin > 1
+                ind = varargin{1};
+                if max(ind) > length(obj) || min(ind) < 1
+                    error('Index out of bounds')
+                end
+            else
+                ind = 1:length(obj);
+            end
+            r = cell(1,length(ind));
+            for k=ind
+                theSweep = obj.sweeps{k};
+                r{k}.trialNum = theSweep.trialNum;
+                r{k}.cellNum = theSweep.cellNum;
+                r{k}.cellCode = theSweep.cellCode;
+                r{k}.xsgFileNum = theSweep.xsgFileNum;
+                r{k}.useFlag = theSweep.useFlag;
+                r{k}.sampleRate = theSweep.sampleRate;
+                r{k}.spikeWaveforms = theSweep.spikeWaveforms;
+                r{k}.spikeWaveformsSecondary = theSweep.spikeWaveformsSecondary;
+            end
+        end
+
+        %
+        %         function obj = set_primary_threshold_all(obj, thresh)
+        %         %
+        %         % thresh: either a scalar which is used for all sweeps, or a
+        %         %         vector of length equal to number of sweeps in array.
+        %         %
+        %             if ~isempty(obj.sweeps)
+        %                 if length(thresh)==1
+        %                     thresh = thresh * ones(1, length(obj.sweeps));
+        %                 end
+        %                 for k=1:length(obj.sweeps)
+        %                     obj.sweeps{k}.spikeThreshold = thresh;
+        %                 end
+        %             end
+        %         end
+
+        function obj = set_primary_threshold_all(obj, thresh)
+            if ~isempty(obj.sweeps)
+                for k=1:length(obj.sweeps)
+                    obj.sweeps{k}.spikeThreshold = thresh;
+                end
+            end
+        end
+
+        function obj = set_primary_threshold(obj, trial_nums, thresholds)
+            %
+            % trial_nums: vector of behavior trial numbers.
+            % thresholds: either a single scalar value or a vector of
+            %             the same size as trial_nums.
+            %
+            if length(thresholds)==1
+                thresholds = repmat(thresholds, size(trial_nums));
+            elseif length(thresholds) ~= length(trial_nums)
+                error('Arguments trial_nums and thresholds must be same length')
+            end
+            n = cellfun(@(x) x.trialNum, obj.sweeps);
+            for k=1:length(trial_nums)
+                ind = find(n==trial_nums(k));
+                if isempty(ind)
+                    disp(['Warning: trial number ' num2str(trial_nums(k)) ' not found---skipping.'])
+                elseif length(ind) > 1
+                    disp(['Warning: trial number ' num2str(trial_nums(k)) ' found more than once---skipping.'])
+                else
+                    obj.sweeps{ind}.spikeThreshold = thresholds(k);
+                end
+            end
+        end
+
+        function obj = set_artifact_threshold_all(obj, thresh)
+            if ~isempty(obj.sweeps)
+                for k=1:length(obj.sweeps)
+                    obj.sweeps{k}.artifactThreshold = thresh;
+                end
+            end
+        end
+
+        function obj = set_artifact_threshold(obj, trial_nums, thresholds)
+            %
+            % trial_nums: vector of behavior trial numbers.
+            % thresholds: either a single scalar value or a vector of
+            %             the same size as trial_nums.
+            %
+            if length(thresholds)==1
+                thresholds = repmat(thresholds, size(trial_nums));
+            elseif length(thresholds) ~= length(trial_nums)
+                error('Arguments trial_nums and thresholds must be same length')
+            end
+            n = cellfun(@(x) x.trialNum, obj.sweeps);
+            for k=1:length(trial_nums)
+                ind = find(n==trial_nums(k));
+                if isempty(ind)
+                    disp(['Warning: trial number ' num2str(trial_nums(k)) ' not found---skipping.'])
+                elseif length(ind) > 1
+                    disp(['Warning: trial number ' num2str(trial_nums(k)) ' found more than once---skipping.'])
+                else
+                    obj.sweeps{ind}.artifactThreshold = thresholds(k);
+                end
+            end
+        end
+
+
+
+
+        function [r, count] = get_LFP_spectrogram_mean(obj, trial_nums)
+            %
+            % [r, count] = get_LFP_spectrogram_mean(obj, trial_nums)
+            %
+            %
+            if isempty(obj.sweeps) || isempty(trial_nums)
+                r = []; count = [];
+                return
+            end
+            n = intersect(trial_nums, obj.trialNums);
+            if length(n) ~= length(trial_nums)
+                missing_trial_nums = setdiff(trial_nums, obj.trialNums);
+                disp(['Trials ' num2str(missing_trial_nums) ' not found---skipping.'])
+            end
+            count = 0; 
+            for k=1:length(n)
+                ind = find(obj.trialNums==n(k));
+                if isempty(ind)
+                    disp(['Trial number ' int2str(n(k)) ' not found---skipping.'])
+                elseif length(ind) > 1
+                    disp(['Trial number ' int2str(n(k)) ' has ' int2str(length(ind)) ' instances---skipping.'])
+                else
+                    count = count + 1;
+                    s = obj.sweeps{ind}.LFPSpectrogram;
+                    if count==1
+                        r.S = s.S;
+                        r.f = s.f;
+                        r.t = s.t;
+                    else
+                        r.S = r.S + s.S;
+                        if r.f ~= s.f
+                            error('Frequency vectors for each included spectrogram must be identical.')
+                        end
+                        if r.t ~= s.t
+                            error('Time vectors for each included spectrogram must be identical.')
+                        end
+                    end
+                end
+            end
+            r.S = r.S ./ count;
+        end
+
+    end
+
+    methods % Dependent property methods; cannot have attributes.
+        function value = get.trialNums(obj)
+            value = cellfun(@(x) x.trialNum, obj.sweeps);
+        end
+    end
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
