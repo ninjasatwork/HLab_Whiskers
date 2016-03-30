@@ -1,0 +1,33 @@
+This text describes the changes you have to implement in order to make the code compatible with .seq files
+generated from StreamPix 6:
+
+IMPORTANT: The specific changes suggested in this text are exclusevely compatible with Windows platform. In
+order to make the code platform independent. Other function and data types must be assigned.
+
+Changes were suggested by Philippe Candelier <pc@norpix.com> and Rune Lanton <runelanton@me.com> 
+All the changes were implemented and tested by Rune Lanton <runelanton@me.com> 
+
+There has been changes on the sequence file format between revision 5 and 6. It is mostly regarding bytes
+alignment, allowing the software to support hard disk with larger capacity and different addressing space.
+
+To do so, follow these steps:
+1- In the seq.c file you have to change the image block size. So switch it from 1024 to 8192 bytes.
+2- In the same file, fseek function only supports files up to 2gb in size on windows. By replacing it with _fseeki64 the problem seems to be solved.
+3- You should adapt the code to larger file sizes by changing the datatype of some variables: On Lines:
+~line 85:   size_t offset = 1024 + index * h->truesize;
+            long long offset = 8192 + (long long)index * (long long)(h->truesize);
+~line 112:  SEQ_ASSERT( fseek( r->fp, 1024+i*dz_seq       , SEEK_SET ) );  
+            SEQ_ASSERT( _fseeki64(r->fp, 8192 + (long long)i * (long long)dz_seq, SEEK_SET));
+~line 126:  size_t offset = 1024 + index * h->truesize;
+            long long offset = 8192 + (long long)index * (long long)(h->truesize);
+~line 140:  size_t offset = 1024 + index * h->truesize;
+            long long offset = 8192 + (long long)index * (long long)(h->truesize);
+~line 183:  SEQ_ASSERT( fseek( r->fp, 1024+i*(r->truesize), SEEK_SET ) );
+            SEQ_ASSERT(_fseeki64(r->fp, 8192 + (long long)i * (long long)(r->truesize), SEEK_SET));
+~line 206:  SEQ_ASSERT( fseek( r->fp, 1024+i*dz_seq       , SEEK_SET ) );
+            SEQ_ASSERT(_fseeki64(r->fp, 8192 + (long long)i * (long long)dz_seq, SEEK_SET));
+~line 220:  size_t offset = 1024 + index * h->truesize + h->sizebytes;
+            long long offset = 8192 + (long long)index * (long long)(h->truesize) + (long long)(h->sizebytes);
+            
+            
+            
